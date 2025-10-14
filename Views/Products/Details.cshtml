@@ -1,0 +1,13 @@
+﻿@model JiujitsuGymApp.Models.Product
+
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<h1>Product Details</h1>
+
+<p><strong>ID:</strong> @Model.Id</p>
+<p><strong>Name:</strong> @Model.Name</p>
+<p><strong>Price:</strong> $@Model.Price</p>
+
+<a href="/Products">Back to Products list</a>
