@@ -23,7 +23,7 @@
                 <td>@product.Name</td>
                 <td>@product.Price</td>
                 <td>
-                    <a href="/Products/Details/@product.Id">View Details</a>
+                    <a asp-action="Details" asp-route-id="@product.Id">View Details</a>
                 </td>
             </tr>
         }
