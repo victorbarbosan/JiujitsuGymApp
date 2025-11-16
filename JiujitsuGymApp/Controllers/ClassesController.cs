@@ -9,5 +9,5 @@ namespace JiujitsuGymApp.Controllers
 		{
 			return View();
 		}
-	}//test, this is not being tracked
+	}
 }
