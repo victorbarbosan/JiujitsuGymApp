@@ -1,0 +1,35 @@
+﻿@model List<JiujitsuGymApp.Models.Product>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h1>Products List</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price ($)</th>
+            <th>Details</th>
+            <th>Edit</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@product.Id</td>
+                <td>@product.Name</td>
+                <td>@product.Price</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@product.Id">View Details</a>
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@product.Id">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
