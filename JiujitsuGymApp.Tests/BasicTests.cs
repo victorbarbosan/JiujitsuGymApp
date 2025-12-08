@@ -1,12 +1,14 @@
+using JiujitsuGymApp.Models;
+
 namespace JiujitsuGymApp.Tests;
 
-	public class BasicTests
-	{
+public class BasicTests
+{
 	[Fact]
 	public void Test_ClassModel_Creation()
 	{
 		// Arrange
-		var teacher = new JiujitsuGymApp.Models.User { Id = 1, Name = "Victor" };
+		var teacher = new JiujitsuGymApp.Models.User { Id = "1", FirstName = "Victor" };
 		var classTime = new DateTime(2025, 1, 1, 10, 0, 0);
 
 		var model = new JiujitsuGymApp.Models.Class
@@ -18,7 +20,7 @@ namespace JiujitsuGymApp.Tests;
 		};
 
 		// Act + Assert
-		Assert.Equal(1, model.TeacherId);
+		Assert.Equal("1", model.TeacherId);
 		Assert.Equal("Kitchener", model.Location);
 		Assert.Equal(classTime, model.DateTime);
 		Assert.True(model.CreatedAt <= DateTime.UtcNow);
@@ -32,21 +34,21 @@ namespace JiujitsuGymApp.Tests;
 		// Arrange
 		var user = new JiujitsuGymApp.Models.User
 		{
-			Id = 2,
-			Name = "Victor",
+			Id = "2",
+			FirstName = "Victor",
 			Email = "Victor@example.com",
 			PhoneNumber = "123-456-7890",
-			Belt = "Blue",
+			Belt = BeltColor.Blue,
 			CreatedAt = DateTime.UtcNow
 		};
 
 		// Act + Assert
-		Assert.Equal(2, user.Id);
-		Assert.Equal("Victor", user.Name);
+		Assert.Equal("2", user.Id);
+		Assert.Equal("Victor", user.FirstName);
 		Assert.Equal("Victor@example.com", user.Email);
 		Assert.Equal("123-456-7890", user.PhoneNumber);
-		Assert.Equal("Blue", user.Belt);
-		Assert.NotEqual(default, user.CreatedAt); 
+		Assert.Equal( "Blue", BeltColor.Blue.ToString());
+		Assert.NotEqual(default, user.CreatedAt);
 	}
 
 }
