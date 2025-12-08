@@ -10,7 +10,7 @@ namespace JiujitsuGymApp.Models
 		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		public int Id { get; set; }
 		[Required]
-		public int TeacherId { get; set; }
+		public string TeacherId { get; set; }
 		[Required]
 		[ForeignKey("TeacherId")]
 		public User Teacher { get; set; }
