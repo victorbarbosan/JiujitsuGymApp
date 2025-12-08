@@ -1,6 +1,5 @@
 ﻿using JiujitsuGymApp.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace JiujitsuGymApp
 {

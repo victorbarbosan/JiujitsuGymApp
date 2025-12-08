@@ -47,7 +47,7 @@ public class BasicTests
 		Assert.Equal("Victor", user.FirstName);
 		Assert.Equal("Victor@example.com", user.Email);
 		Assert.Equal("123-456-7890", user.PhoneNumber);
-		Assert.Equal( "Blue", BeltColor.Blue.ToString());
+		Assert.Equal("Blue", BeltColor.Blue.ToString());
 		Assert.NotEqual(default, user.CreatedAt);
 	}
 
