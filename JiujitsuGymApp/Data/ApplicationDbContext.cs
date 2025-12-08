@@ -27,6 +27,20 @@ namespace JiujitsuGymApp.Data
                 new Product { Id = 4, Name = "Finger Tape", Price = 9.99m, Description = "Protective tape for fingers", Category = "Accessories", CreatedDate = new DateTime(2025, 01, 01 ,0 ,0 ,0, DateTimeKind.Utc) },
                 new Product { Id = 5, Name = "Mouth Guard", Price = 19.99m, Description = "Protective mouth guard", Category = "Safety", CreatedDate = new DateTime(2025, 01, 01 ,0 ,0 ,0, DateTimeKind.Utc) }
             );
+
+
+            // User Entity setting
+            modelBuilder.Entity<User>(entity =>
+            {
+
+                // Table name
+                entity.ToTable("Users");
+
+				// Store as "White", "Blue", etc
+				entity.Property(u => u.Belt)
+                    .HasConversion<string>(); 
+
+            });
         }
     }
 }   
