@@ -1,0 +1,82 @@
+﻿@model LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 text-center">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login to Your Account
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Login" method="post" asp-route-returnurl="@ViewData["ReturnUrl"]">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Validation Summary -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Email Field -->
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <!-- Remember Me -->
+                        <div class="mb-3 form-check">
+                            <input asp-for="RememberMe" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label"></label>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Links -->
+                    <div class="mt-4 text-center">
+                        <p class="mb-2">
+                            Don't have an account?
+                            <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">
+                                Register here
+                            </a>
+                        </p>
+                        <p class="mb-0">
+                            <a href="#" class="text-muted">Forgot your password?</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
