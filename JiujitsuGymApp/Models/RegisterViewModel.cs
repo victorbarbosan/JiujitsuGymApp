@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace JiujitsuGymApp.Models
 {
@@ -31,11 +32,22 @@ namespace JiujitsuGymApp.Models
         public string ConfirmPassword { get; set; } = string.Empty;
 
         [Display(Name = "Belt Rank")]
-        [StringLength(30)]
-        public string? Belt { get; set; }
+        public BeltColor? Belt { get; set; }
 
         [Phone]
         [Display(Name = "Phone Number")]
         public string? PhoneNumber { get; set; }
+
+        private static readonly List<SelectListItem> _beltOptions =
+                    Enum.GetValues(typeof(BeltColor))
+                        .Cast<BeltColor>()
+                        .Select(e => new SelectListItem
+                        {
+                            Value = ((int)e).ToString(),
+                            Text = e.ToString()
+                        })
+                        .ToList();
+
+        public List<SelectListItem> BeltOptions => _beltOptions;
     }
 }
