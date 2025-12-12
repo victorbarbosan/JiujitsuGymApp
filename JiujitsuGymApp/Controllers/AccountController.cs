@@ -146,5 +146,22 @@ namespace JiujitsuGymApp.Controllers
             return View(model);
         }
 
+        // POST : Logout
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            _logger.LogInformation($"User logged out: {User.Identity?.Name}");
+            return RedirectToAction("Index", "Home");
+        }
+
+        // GET : Account/AccessDenied
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
     }
 }
