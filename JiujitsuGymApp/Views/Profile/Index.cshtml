@@ -50,7 +50,7 @@
 
                                 <dt class="col-sm-4">Belt:</dt>
                                 <dd class="col-sm-8">
-                                    @if (!string.IsNullOrEmpty(Model.Belt))
+                                    @if (!string.IsNullOrEmpty(Model.Belt.ToString()))
                                     {
                                         <span class="badge bg-info">@Model.Belt Belt</span>
                                     }
