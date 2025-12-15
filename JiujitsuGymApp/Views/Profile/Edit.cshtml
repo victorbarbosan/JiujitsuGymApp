@@ -58,16 +58,13 @@
 
                         <div class="mb-3">
                             <label asp-for="Belt" class="form-label"></label>
-                            <select asp-for="Belt" class="form-select">
-                                <option value="">Select Belt Rank</option>
-                                <option value="White">White</option>
-                                <option value="Blue">Blue</option>
-                                <option value="Purple">Purple</option>
-                                <option value="Brown">Brown</option>
-                                <option value="Black">Black</option>
-                                <option value="Coral">Coral</option>
-                                <option value="Red">Red</option>
+
+                            <select asp-for="Belt"
+                                    class="form-select"
+                                    asp-items="Model.BeltOptions">
+                                <option value="">-- Select Your New Belt Rank --</option>
                             </select>
+
                             <span asp-validation-for="Belt" class="text-danger"></span>
                         </div>
 

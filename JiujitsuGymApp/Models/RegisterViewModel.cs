@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using JiujitsuGymApp.Helpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace JiujitsuGymApp.Models
@@ -38,16 +39,6 @@ namespace JiujitsuGymApp.Models
         [Display(Name = "Phone Number")]
         public string? PhoneNumber { get; set; }
 
-        private static readonly List<SelectListItem> _beltOptions =
-                    Enum.GetValues(typeof(BeltColor))
-                        .Cast<BeltColor>()
-                        .Select(e => new SelectListItem
-                        {
-                            Value = ((int)e).ToString(),
-                            Text = e.ToString()
-                        })
-                        .ToList();
-
-        public List<SelectListItem> BeltOptions => _beltOptions;
+        public List<SelectListItem> BeltOptions { get; set; } = EnumHelpers.ToSelectList<BeltColor>();
     }
 }

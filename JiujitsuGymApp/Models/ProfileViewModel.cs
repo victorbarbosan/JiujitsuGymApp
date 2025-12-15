@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using JiujitsuGymApp.Helpers;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace JiujitsuGymApp.Models
 {
@@ -38,6 +40,8 @@ namespace JiujitsuGymApp.Models
         [Display(Name = "Profile Picture URL")]
         [Url]
         public string? ProfilePictureUrl { get; set; }
+
+        public List<SelectListItem> BeltOptions { get; set; } = EnumHelpers.ToSelectList<BeltColor>();
 
         // future ideas
         /*
