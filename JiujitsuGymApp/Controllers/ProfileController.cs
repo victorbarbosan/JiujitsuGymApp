@@ -44,5 +44,31 @@ namespace JiujitsuGymApp.Controllers
 
             return View(model);
         }
+
+        // GET : Profile/Edit
+        [HttpGet]
+        public async Task<IActionResult> Edit()
+        {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            var model = new ProfileViewModel
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email!,
+                PhoneNumber = user.PhoneNumber,
+                Belt = user.Belt.ToString(),
+                CreatedAt = user.CreatedAt,
+                LastLoginAt = user.LastLoginAt,
+            };
+
+
+            return View(model);
+        }
     }
 }

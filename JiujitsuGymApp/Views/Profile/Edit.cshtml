@@ -1,0 +1,104 @@
+﻿@model ProfileViewModel
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <!-- Back Button -->
+            <a href="@Url.Action("Index", "Profile")" class="btn btn-link mb-3">
+                <i class="fas fa-arrow-left me-1"></i>Back to Profile
+            </a>
+
+            <!-- Edit Form -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Edit Profile
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Validation Summary -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Personal Information Section -->
+                        <h5 class="text-muted mb-3">Personal Information</h5>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="form-label"></label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="form-label"></label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                This will also be your username for logging in.
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label"></label>
+                            <input asp-for="PhoneNumber" class="form-control" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Belt" class="form-label"></label>
+                            <select asp-for="Belt" class="form-select">
+                                <option value="">Select Belt Rank</option>
+                                <option value="White">White</option>
+                                <option value="Blue">Blue</option>
+                                <option value="Purple">Purple</option>
+                                <option value="Brown">Brown</option>
+                                <option value="Black">Black</option>
+                                <option value="Coral">Coral</option>
+                                <option value="Red">Red</option>
+                            </select>
+                            <span asp-validation-for="Belt" class="text-danger"></span>
+                        </div>
+
+                        <!-- Profile Picture (Optional) -->
+                        <div class="mb-3">
+                            <label asp-for="ProfilePictureUrl" class="form-label"></label>
+                            <input asp-for="ProfilePictureUrl" class="form-control" placeholder="https://example.com/your-photo.jpg" />
+                            <span asp-validation-for="ProfilePictureUrl" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                Enter a URL for your profile picture (optional).
+                            </small>
+                        </div>
+
+                        <!-- Form Buttons -->
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>Save Changes
+                            </button>
+                            <a href="@Url.Action("Index", "Profile")" class="btn btn-outline-secondary ms-2">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
