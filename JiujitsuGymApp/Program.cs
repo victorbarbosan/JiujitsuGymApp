@@ -1,6 +1,8 @@
 using JiujitsuGymApp.Data;
 using JiujitsuGymApp.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,7 +42,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // MVC
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // Require authenticated user for EVERY controller action
+    var policy = new AuthorizationPolicyBuilder()
+                     .RequireAuthenticatedUser()
+                     .Build();
+    options.Filters.Add(new AuthorizeFilter(policy));
+});
 
 var app = builder.Build();
 

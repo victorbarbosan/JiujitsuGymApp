@@ -1,11 +1,9 @@
 ﻿using JiujitsuGymApp.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JiujitsuGymApp.Controllers
 {
-    [Authorize]
     public class ProfileController : Controller
     {
         private readonly UserManager<User> _userManager;
