@@ -26,7 +26,8 @@ namespace JiujitsuGymApp.Models
         public string? PhoneNumber { get; set; }
 
         [Display(Name = "Belt Rank")]
-        public BeltColor? Belt { get; set; }
+        [StringLength(30)]
+        public string? Belt { get; set; }
 
         [Display(Name = "Member Since")]
         [DataType(DataType.Date)]
