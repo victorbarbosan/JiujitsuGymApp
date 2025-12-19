@@ -1,10 +1,40 @@
-﻿@{
-	ViewData["Title"] = "Classes";
+﻿@model IEnumerable<JiujitsuGymApp.Models.Class>
+
+@{
+    ViewData["Title"] = "Classes";
 }
 
-<div class="text-center">
-	<h1>Classes List</h1>
-	<p>Class 1</p>
-	<p>Class 2</p>
-	<p>Class 3</p>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Upcoming Classes</h1>
+
+    <div class="row">
+        @if (!Model.Any())
+
+        {
+            <p class="text-center">No classes scheduled at the moment.</p>
+        }
+
+        else
+
+        {
+            @foreach (var item in Model)
+
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Location</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                Instructor: @item.Teacher.Name
+                            </h6>
+                            <p class="card-text">
+                                <strong>Date:</strong> @item.DateTime.ToString("MMM dd, yyyy") <br />
+                                <strong>Time:</strong> @item.DateTime.ToString("hh:mm tt")
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
 </div>
