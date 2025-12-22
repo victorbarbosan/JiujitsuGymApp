@@ -15,90 +15,39 @@
                 </div>
             }
 
-            <!-- Profile Header -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">
-                        <i class="fas fa-user-circle me-2"></i>My Profile
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <!-- Profile Picture (Optional) -->
-                    @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
-                    {
-                        <div class="text-center mb-4">
-                            <img src="@Model.ProfilePictureUrl"
-                                 alt="Profile Picture"
-                                 class="rounded-circle"
-                                 style="width: 150px; height: 150px; object-fit: cover;">
-                        </div>
-                    }
-
-                    <!-- Profile Information -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5 class="text-muted">Personal Information</h5>
-                            <dl class="row">
-                                <dt class="col-sm-4">Full Name:</dt>
-                                <dd class="col-sm-8">@Model.FirstName @Model.LastName</dd>
-
-                                <dt class="col-sm-4">Email:</dt>
-                                <dd class="col-sm-8">@Model.Email</dd>
-
-                                <dt class="col-sm-4">Phone:</dt>
-                                <dd class="col-sm-8">@(Model.PhoneNumber ?? "Not provided")</dd>
-
-                                <dt class="col-sm-4">Belt:</dt>
-                                <dd class="col-sm-8">
-                                    @if (!string.IsNullOrEmpty(Model.Belt))
-                                    {
-                                        <span class="badge bg-info">@Model.Belt Belt</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Not specified</span>
-                                    }
-                                </dd>
-                            </dl>
-                        </div>
-
-                        <div class="col-md-6">
-                            <h5 class="text-muted">Account Information</h5>
-                            <dl class="row">
-                                <dt class="col-sm-4">Member Since:</dt>
-                                <dd class="col-sm-8">@Model.CreatedAt.ToString("MMMM dd, yyyy")</dd>
-
-                                <dt class="col-sm-4">Last Login:</dt>
-                                <dd class="col-sm-8">
-                                    @if (Model.LastLoginAt.HasValue)
-                                    {
-                                        @Model.LastLoginAt.Value.ToString("MMMM dd, yyyy hh:mm tt")
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Never</span>
-                                    }
-                                </dd>
-                            </dl>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="mt-4">
-                        <a href="@Url.Action("Edit", "Profile")" class="btn btn-primary me-2">
-                            <i class="fas fa-edit me-1"></i>Edit Profile
-                        </a>
-                        <a href="@Url.Action("ChangePassword", "Profile")" class="btn btn-outline-secondary">
-                            <i class="fas fa-key me-1"></i>Change Password
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <!-- Lit Web Component: Profile Card -->
+            <profile-card first-name="@Model.FirstName"
+                          last-name="@Model.LastName"
+                          belt="@Model.Belt.ToString()"
+                          email="@Model.Email"
+                          phone-number="@Model.PhoneNumber"
+                          member-since="@Model.CreatedAt.ToString("yyyy-MM-dd")"
+                          last-login="@(Model.LastLoginAt?.ToString("yyyy-MM-dd") ?? "Never")">
+            </profile-card>
         </div>
     </div>
 </div>
 
-<!-- Font Awesome for icons (if not already included) -->
+<!-- Import and configure Lit components -->
+<script type="module">
+   
+    // Wait for DOM to be ready
+    document.addEventListener('DOMContentLoaded', () => {
+        const profileCard = document.getElementById('profileCard');
+
+        // Handle events from the web component
+        profileCard.addEventListener('edit-profile', () => {
+            window.location.href = '@Url.Action("Edit", "Profile")';
+        });
+
+        profileCard.addEventListener('change-password', () => {
+            window.location.href = '@Url.Action("ChangePassword", "Profile")';
+        });
+    });
+</script>
+
 @section Scripts {
-    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
