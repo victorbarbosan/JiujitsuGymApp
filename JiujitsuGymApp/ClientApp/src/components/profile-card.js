@@ -1,4 +1,4 @@
-﻿import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
+﻿import { LitElement, html, css } from 'lit';
 
 export class ProfileCard extends LitElement {
     static properties = {

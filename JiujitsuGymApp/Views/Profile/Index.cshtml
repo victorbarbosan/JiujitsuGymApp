@@ -33,9 +33,10 @@
    
     // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', () => {
-        const profileCard = document.getElementById('profileCard');
+        const profileCard = document.querySelector('profile-card');
 
-        // Handle events from the web component
+        if (!profileCard) return;
+
         profileCard.addEventListener('edit-profile', () => {
             window.location.href = '@Url.Action("Edit", "Profile")';
         });
