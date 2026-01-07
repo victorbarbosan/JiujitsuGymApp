@@ -8,8 +8,9 @@
 [Ll]ogs/
 
 # Ignore Vite build outputs
-wwwroot/js/app.js
-wwwroot/js/app.js.map
+jiujitsugymapp/wwwroot/js/app.js
+jiujitsugymapp/wwwroot/js/app.js.map
+jiujitsugymapp/wwwroot/dist/
 
 # User-specific files
 *.rsuser
