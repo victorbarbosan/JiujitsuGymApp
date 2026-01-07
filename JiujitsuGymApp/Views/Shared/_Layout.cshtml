@@ -41,8 +41,7 @@
                         <li class="nav-item">
                             <user-nav id="userNav"
                                       is-authenticated="@(User.Identity?.IsAuthenticated == true ? "true" : null)"
-                                      user-name="@(User.Identity?.Name ?? "Guest")"
-                                      user-email="@(User.Identity?.Name ?? "")">
+                                      user-name="@($"{User.FindFirst("FirstName")?.Value} {User.FindFirst("LastName")?.Value}".Trim() ?? User.Identity?.Name ?? "Guest")">
                             </user-nav>
                         </li>
                     </ul>

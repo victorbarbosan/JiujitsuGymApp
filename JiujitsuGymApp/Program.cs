@@ -1,4 +1,5 @@
 using JiujitsuGymApp.Data;
+using JiujitsuGymApp.Helpers;
 using JiujitsuGymApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -30,6 +31,8 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
 
 // Configure application cookies
 builder.Services.ConfigureApplicationCookie(options =>
