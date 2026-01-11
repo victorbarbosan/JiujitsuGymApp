@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -9,6 +11,30 @@
     <link rel="stylesheet" href="~/JiujitsuGymApp.styles.css" asp-append-version="true" />
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    @using Microsoft.AspNetCore.Hosting
+    @inject IWebHostEnvironment Env
+
+    @if (Env.IsDevelopment())
+
+
+
+    {
+        <script type="module" src="http://localhost:5173/@@vite/client"></script>
+
+        <script type="module" src="http://localhost:5173/src/main.ts"></script>
+    }
+
+
+
+    else
+
+
+
+    {
+        <script type="module" src="~/dist/assets/main.js"></script>
+        <link rel="stylesheet" href="~/dist/assets/style.css">
+    }
 </head>
 <body>
     <header>
