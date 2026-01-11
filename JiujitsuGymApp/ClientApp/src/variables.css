@@ -1,0 +1,62 @@
+﻿/* variables.css */
+:root {
+  /* =========================
+     COLOR TOKENS (Intent-based)
+     ========================= */
+
+  /* Brand */
+  --color-brand-primary: #1a237e;
+  --color-brand-secondary: #ffd600;
+  --color-brand-accent: #d32f2f;
+
+  /* Surfaces */
+  --color-bg: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8f9fa;
+
+  /* Text */
+  --color-text-primary: #212121;
+  --color-text-secondary: #6c757d;
+  --color-text-inverse: #ffffff;
+
+  /* Borders */
+  --color-border: #e9ecef;
+  --color-border-strong: #dee2e6;
+
+  /* =========================
+     SPACING SCALE
+     ========================= */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+
+  /* =========================
+     RADIUS
+     ========================= */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* =========================
+     ELEVATION
+     ========================= */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  /* =========================
+     TYPOGRAPHY
+     ========================= */
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-md: 15px;
+  --font-size-lg: 24px;
+
+  /* =========================
+     MOTION
+     ========================= */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
+}
