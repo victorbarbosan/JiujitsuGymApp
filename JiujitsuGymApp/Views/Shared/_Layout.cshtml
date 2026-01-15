@@ -16,26 +16,19 @@
     @inject IWebHostEnvironment Env
 
     @if (Env.IsDevelopment())
-
-
-
     {
         <script type="module" src="http://localhost:5173/@@vite/client"></script>
 
         <script type="module" src="http://localhost:5173/src/main.ts"></script>
     }
-
-
-
     else
-
-
-
     {
         <script type="module" src="~/dist/assets/main.js"></script>
         <link rel="stylesheet" href="~/dist/assets/style.css">
+        <script type="module" src="~/js/app.js" asp-append-version="true"></script>
     }
 </head>
+
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
@@ -130,6 +123,6 @@
     </form>
 
     @await RenderSectionAsync("Scripts", required: false)
-    <script type="module" src="~/js/app.js" asp-append-version="true"></script>
+
 </body>
 </html>
