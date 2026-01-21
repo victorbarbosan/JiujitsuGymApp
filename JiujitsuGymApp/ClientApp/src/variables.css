@@ -1,13 +1,14 @@
-﻿/* variables.css */
-:root {
-  /* =========================
-     COLOR TOKENS (Intent-based)
-     ========================= */
-
+﻿:root {
   /* Brand */
-  --color-brand-primary: #1a237e;
+  --color-brand-primary: #4958ff;
   --color-brand-secondary: #ffd600;
-  --color-brand-accent: #d32f2f;
+  --color-brand-accent: #6e7aff;
+
+  /* Functional */
+  --color-success: #2e7d32;
+  --color-warning: #ffa000;
+  --color-error: #d32f2f;
+  --color-info: #0288d1;
 
   /* Surfaces */
   --color-bg: #f5f5f5;
@@ -23,40 +24,30 @@
   --color-border: #e9ecef;
   --color-border-strong: #dee2e6;
 
-  /* =========================
-     SPACING SCALE
-     ========================= */
+  /* SPACING SCALE */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 16px;
   --space-4: 24px;
   --space-5: 32px;
 
-  /* =========================
-     RADIUS
-     ========================= */
+  /* RADIUS */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-pill: 999px;
 
-  /* =========================
-     ELEVATION
-     ========================= */
+  /* ELEVATION */
   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
 
-  /* =========================
-     TYPOGRAPHY
-     ========================= */
+  /* TYPOGRAPHY */
   --font-size-xs: 11px;
   --font-size-sm: 13px;
   --font-size-md: 15px;
   --font-size-lg: 24px;
 
-  /* =========================
-     MOTION
-     ========================= */
+  /* MOTION */
   --transition-fast: 150ms ease;
   --transition-base: 300ms ease;
 }
