@@ -1,21 +1,27 @@
 import { LitElement, html, css } from 'lit';
+import { property } from 'lit/decorators.js';
 
 export class ProfileInfo extends LitElement {
-    static properties = {
-        label: { type: String },
-        value: { type: String },
-    };
+  @property({ type: String, attribute: 'label' })
+  label = '';
 
-    render() {
-        return html`
+  @property({ type: String, attribute: 'value' })
+  value = '';
+
+  private get displayValue() {
+    return this.value || 'Not provided';
+  }
+
+  render() {
+    return html`
       <div>
         <span class="label">${this.label}</span>
-        <span class="value">${this.value || 'Not provided'}</span>
+        <span class="value">${this.displayValue}</span>
       </div>
     `;
-    }
+  }
 
-    static styles = css`
+  static styles = css`
     .label {
       display: block;
       font-size: var(--font-size-xs);

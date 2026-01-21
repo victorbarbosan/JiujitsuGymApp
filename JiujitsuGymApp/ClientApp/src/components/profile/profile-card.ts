@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { property } from 'lit/decorators.js';
 import { getBeltConfig, formatDate } from './profile-utils';
 
 import './profile-header';
@@ -6,20 +7,31 @@ import './profile-info';
 import './profile-actions';
 
 export class ProfileCard extends LitElement {
-    static properties = {
-        firstName: { type: String },
-        lastName: { type: String },
-        email: { type: String },
-        phoneNumber: { type: String },
-        belt: { type: String },
-        memberSince: { type: String },
-        lastLogin: { type: String },
-    };
+  @property({ type: String, attribute: 'first-name' })
+  firstName = '';
 
-    render() {
-        const { main, text, accent } = getBeltConfig(this.belt);
+  @property({ type: String, attribute: 'last-name' })
+  lastName = '';
 
-        return html`
+  @property({ type: String })
+  email = '';
+
+  @property({ type: String, attribute: 'phone-number' })
+  phoneNumber = '';
+
+  @property({ type: String })
+  belt = '';
+
+  @property({ type: String, attribute: 'member-since' })
+  memberSince = '';
+
+  @property({ type: String, attribute: 'last-login' })
+  lastLogin = '';
+
+  render() {
+    const { main, text, accent } = getBeltConfig(this.belt);
+
+    return html`
       <div
         class="card"
         style="
@@ -50,9 +62,9 @@ export class ProfileCard extends LitElement {
         </div>
       </div>
     `;
-    }
+  }
 
-    static styles = css`
+  static styles = css`
     .card {
       background: var(--color-surface);
       border-radius: var(--radius-lg);

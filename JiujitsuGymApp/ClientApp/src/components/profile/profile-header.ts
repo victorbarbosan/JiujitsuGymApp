@@ -1,31 +1,35 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, } from 'lit';
+import { property } from 'lit/decorators.js'; 
 
 export class ProfileHeader extends LitElement {
-    static properties = {
-        firstName: { type: String },
-        lastName: { type: String },
-        belt: { type: String },
-    };
+  @property({ type: String, attribute: 'first-name' })
+  firstName = '';
 
-    get initial() {
-        return this.firstName ? this.firstName[0].toUpperCase() : '?';
-    }
+  @property({ type: String, attribute: 'last-name' })
+  lastName = '';
 
-    render() {
-        return html`
+  @property({ type: String, attribute: 'belt' })
+  belt = '';
+
+  get initial() {
+    return this.firstName ? this.firstName[0].toUpperCase() : '?';
+  }
+
+  render() {
+    return html`
       <div class="profile-header">
         <div class="profile-avatar">${this.initial}</div>
         <h2 class="profile-name">
           ${this.firstName} ${this.lastName}
         </h2>
         ${this.belt
-                ? html`<div class="profile-belt">${this.belt} Belt</div>`
-                : null}
+          ? html`<div class="profile-belt">${this.belt} Belt</div>`
+          : null}
       </div>
     `;
-    }
+  }
 
-    static styles = css`
+  static styles = css`
     .profile-header {
       padding: var(--space-5) var(--space-4);
       text-align: center;

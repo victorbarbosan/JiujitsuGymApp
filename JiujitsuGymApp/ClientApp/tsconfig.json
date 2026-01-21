@@ -7,7 +7,9 @@
         "isolatedModules": true,
         "useDefineForClassFields": false,
         "lib": [ "DOM", "ESNext" ],
-        "types": [ "vite/client" ]
+        "types": [ "vite/client" ],
+        "experimentalDecorators": true,
+        "useDefineForClassFields": false
     },
     "include": [ "src" ]
 }
