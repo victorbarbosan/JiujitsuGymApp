@@ -13,11 +13,17 @@ export class ProfileActions extends LitElement {
     }
 
     #edit() {
-        this.dispatchEvent(new CustomEvent('edit-profile', { bubbles: true }));
+        this.dispatchEvent(new CustomEvent('edit-profile', { 
+            bubbles: true,
+            composed: true 
+        }));
     }
 
     #password() {
-        this.dispatchEvent(new CustomEvent('change-password', { bubbles: true }));
+        this.dispatchEvent(new CustomEvent('change-password', { 
+            bubbles: true,
+            composed: true 
+        }));
     }
 
     static styles = css`
