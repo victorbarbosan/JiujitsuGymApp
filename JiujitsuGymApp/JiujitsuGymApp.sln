@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JiujitsuGymApp", "JiujitsuG
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JiujitsuGymApp.Tests", "..\JiujitsuGymApp.Tests\JiujitsuGymApp.Tests.csproj", "{151627C7-BEB6-410C-9E7F-2A4A99BBF23B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JiujitsuGymApp.E2E", "..\JiujitsuGymApp.E2E\JiujitsuGymApp.E2E.csproj", "{C51308A0-8799-99A9-0D18-8EBA9D38B7D4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{151627C7-BEB6-410C-9E7F-2A4A99BBF23B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{151627C7-BEB6-410C-9E7F-2A4A99BBF23B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{151627C7-BEB6-410C-9E7F-2A4A99BBF23B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C51308A0-8799-99A9-0D18-8EBA9D38B7D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C51308A0-8799-99A9-0D18-8EBA9D38B7D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C51308A0-8799-99A9-0D18-8EBA9D38B7D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C51308A0-8799-99A9-0D18-8EBA9D38B7D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
