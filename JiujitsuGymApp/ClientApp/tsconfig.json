@@ -8,8 +8,7 @@
         "useDefineForClassFields": false,
         "lib": [ "DOM", "ESNext" ],
         "types": [ "vite/client" ],
-        "experimentalDecorators": true,
-        "useDefineForClassFields": false
+        "experimentalDecorators": true
     },
     "include": [ "src" ]
 }
