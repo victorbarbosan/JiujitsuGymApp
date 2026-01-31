@@ -11,7 +11,7 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
     reporter: 'html',
     use: {
-        baseURL: process.env.BASE_URL || 'https://localhost:7001',
+        baseURL: process.env.BASE_URL || 'https://localhost:7106',
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
@@ -28,9 +28,11 @@ export default defineConfig({
         },
     ],
 
-    webServer: {
-        command: process.env.CI ? '' : 'dotnet run --project ../JiujitsuGymApp/JiujitsuGymApp.csproj',
-        port: 7001,
-        reuseExistingServer: !process.env.CI,
-    },
+    webServer: process.env.CI
+        ? {
+            command: 'dotnet run --project ../JiujitsuGymApp/JiujitsuGymApp.csproj --urls https://localhost:7106',
+            url: 'https://localhost:7106',
+        }
+        : undefined,
+
 });
