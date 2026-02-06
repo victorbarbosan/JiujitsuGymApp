@@ -122,6 +122,9 @@ namespace JiujitsuGymApp.Controllers
                 {
                     _logger.LogInformation("User created a new account: {Email}", model.Email);
 
+                    // Assign default role
+                    await _userManager.AddToRoleAsync(user, "Member");
+
                     // Log in the user
                     await _signInManager.SignInAsync(user, isPersistent: false);
 

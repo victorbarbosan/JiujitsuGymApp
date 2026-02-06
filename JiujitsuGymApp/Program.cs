@@ -56,6 +56,29 @@ builder.Services.AddControllersWithViews(options =>
 
 var app = builder.Build();
 
+// Seed roles
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    async Task SeedRolesAsync()
+    {
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var roles = new[] { "Admin", "Member", "Teacher" };
+
+        foreach (var roleName in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(roleName))
+            {
+                await roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+        }
+    }
+
+    // Run the async seeding synchronously at startup
+    SeedRolesAsync().GetAwaiter().GetResult();
+}
+
 // Pipeline
 if (!app.Environment.IsDevelopment())
 {
