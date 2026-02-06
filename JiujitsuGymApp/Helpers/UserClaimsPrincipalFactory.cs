@@ -5,12 +5,13 @@ using Microsoft.Extensions.Options;
 
 namespace JiujitsuGymApp.Helpers
 {
-    public class UserClaimsPrincipalFactory : UserClaimsPrincipalFactory<User>
+    public class UserClaimsPrincipalFactory : UserClaimsPrincipalFactory<User, IdentityRole>
     {
         public UserClaimsPrincipalFactory(
             UserManager<User> userManager,
+            RoleManager<IdentityRole> roleManager,
             IOptions<IdentityOptions> optionsAccessor)
-            : base(userManager, optionsAccessor)
+            : base(userManager, roleManager, optionsAccessor)
         {
         }
 
@@ -18,7 +19,7 @@ namespace JiujitsuGymApp.Helpers
         {
             var identity = await base.GenerateClaimsAsync(user);
 
-            // Add the FirstName claim so it's available in the Layout
+            // Add FirstName/LastName so they are available in views/layout
             identity.AddClaim(new Claim("FirstName", user.FirstName ?? ""));
             identity.AddClaim(new Claim("LastName", user.LastName ?? ""));
 
