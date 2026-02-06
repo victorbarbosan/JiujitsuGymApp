@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "_Layout";
+    var firstName = User.FindFirst("FirstName")?.Value ?? User.Identity?.Name ?? "Guest";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mt-5 border-danger">
+                <div class="card-body text-center">
+                    <i class="fas fa-ban fa-3x text-danger mb-3"></i>
+
+                    <h1 class="h3 mb-2">Access denied</h1>
+                    <p class="text-muted mb-3">Sorry, <strong>@firstName</strong> — you don't have permission to view this page.</p>
+
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                            <i class="fas fa-home me-1"></i> Go to Home
+                        </a>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a href="#" class="btn btn-outline-secondary"
+                               onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+                                <i class="fas fa-sign-out-alt me-1"></i> Logout
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </a>
+                        }
+                    </div>
+
+                    <p class="small text-muted">
+                        If you believe you should have access, contact an administrator.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="logoutForm" asp-controller="Account" asp-action="Logout" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
