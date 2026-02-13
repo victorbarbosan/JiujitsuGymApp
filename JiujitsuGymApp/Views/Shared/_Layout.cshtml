@@ -1,6 +1,4 @@
-﻿
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -53,6 +51,16 @@
                                 <i class="fas fa-shopping-bag me-1"></i>Products
                             </a>
                         </li>
+
+                        @* Admin link *@
+                        @if (User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">
+                                    <i class="fas fa-shield-alt me-1"></i>Admin
+                                </a>
+                            </li>
+                        }
                     </ul>
 
                     <!-- Right side: Login/Register OR User Dropdown -->

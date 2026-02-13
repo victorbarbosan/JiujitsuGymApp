@@ -1,0 +1,38 @@
+﻿@model JiujitsuGymApp.Views.Admin.IndexModel
+@{
+    ViewData["Title"] = "Admin";
+}
+
+<h1>Admin</h1>
+
+<ul class="nav nav-tabs" id="adminTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab" aria-controls="users" aria-selected="true">
+            Users
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="classes-tab" data-bs-toggle="tab" data-bs-target="#classes" type="button" role="tab" aria-controls="classes" aria-selected="false">
+            Classes
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="false">
+            Products
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content border border-top-0 p-3" id="adminTabsContent">
+    <div class="tab-pane fade show active" id="users" role="tabpanel" aria-labelledby="users-tab">
+        <p>Users management will be implemented here. (Placeholder)</p>
+    </div>
+    <div class="tab-pane fade" id="classes" role="tabpanel" aria-labelledby="classes-tab">
+        <p>Classes management will be implemented here. (Placeholder)</p>
+    </div>
+    <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
+        <p>Products management will be implemented here. (Placeholder)</p>
+    </div>
+</div>
+
+
