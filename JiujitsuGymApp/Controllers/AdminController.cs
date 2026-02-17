@@ -1,4 +1,5 @@
-﻿using JiujitsuGymApp.Models;
+﻿using JiujitsuGymApp.Dtos;
+using JiujitsuGymApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +30,18 @@ namespace JiujitsuGymApp.Controllers
                 .OrderBy(u => u.FirstName)
                 .Take(_pageSize)
                 .ToListAsync();
-            return View(initialUsers);
+
+            var usersDto = initialUsers.Select(u => new UserDto
+            {
+                Id = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                PhoneNumber = u.PhoneNumber,
+                Belt = u.Belt.HasValue ? u.Belt.Value.ToString() : "Not Set"
+            }).ToList();
+
+            return View(usersDto);
         }
 
 
