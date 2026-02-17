@@ -77,7 +77,7 @@ export class AdminUserManagementTable extends LitElement {
                         <tr>
                             <td>${u.firstName} ${u.lastName}</td>
                             <td>${u.email}</td>
-                            <td>${u.belt}</belt>
+                            <td>${u.belt}</td>
                         </tr>
                     `)}
                 </tbody>
