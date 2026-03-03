@@ -7,6 +7,11 @@ import './profile-info';
 import './profile-actions';
 
 export class ProfileCard extends LitElement {
+  @property({type:Boolean})
+  editMode = false;
+    #enableEdit() {
+        this.editMode = true;
+    }
   @property({ type: String, attribute: 'first-name' })
   firstName = '';
 
@@ -58,7 +63,7 @@ export class ProfileCard extends LitElement {
             </profile-info>
           </div>
 
-          <profile-actions></profile-actions>
+          <profile-actions @edit-profile=${this.#enableEdit}></profile-actions>
         </div>
       </div>
     `;

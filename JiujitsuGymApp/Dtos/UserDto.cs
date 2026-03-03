@@ -8,5 +8,6 @@
         public string Email { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
         public string Belt { get; set; } = "Not Set";
+        public string Role { get; set; } = "Member";
     }
 }

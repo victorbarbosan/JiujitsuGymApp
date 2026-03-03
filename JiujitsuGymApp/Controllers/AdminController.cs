@@ -12,11 +12,19 @@ namespace JiujitsuGymApp.Controllers
     {
         private readonly int _pageSize;
         private readonly UserManager<User> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<AdminController> _logger;
 
-        public AdminController(UserManager<User> userManager, ILogger<AdminController> logger, IConfiguration config)
+        private static readonly HashSet<string> _allowedRoles = ["Admin", "Member", "Teacher"];
+
+        public AdminController(
+            UserManager<User> userManager,
+            RoleManager<IdentityRole> roleManager,
+            ILogger<AdminController> logger,
+            IConfiguration config)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _logger = logger;
             _pageSize = config.GetValue<int>("Pagination:DefaultPageSize", 50);
         }
@@ -44,12 +52,10 @@ namespace JiujitsuGymApp.Controllers
             return View(usersDto);
         }
 
-
         // GET : Admin/GetUsers
         [HttpGet]
         public async Task<IActionResult> GetUsers(int skip = 0)
         {
-
             var userList = await _userManager.Users
                 .AsNoTracking()
                 .OrderBy(u => u.FirstName)
@@ -66,6 +72,65 @@ namespace JiujitsuGymApp.Controllers
                 u.PhoneNumber,
                 Belt = u.Belt.HasValue ? u.Belt.Value.ToString() : "Not Set"
             }));
+        }
+
+        // POST : Admin/CreateUser
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
+                return BadRequest(new { errors });
+            }
+
+            if (!_allowedRoles.Contains(dto.Role))
+            {
+                return BadRequest(new { errors = new[] { $"Invalid role '{dto.Role}'." } });
+            }
+
+            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUser != null)
+            {
+                return BadRequest(new { errors = new[] { "A user with this email already exists." } });
+            }
+
+            var beltColor = Enum.TryParse<BeltColor>(dto.Belt, out var parsed) ? parsed : BeltColor.White;
+
+            var user = new User
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                UserName = dto.Email,
+                Email = dto.Email,
+                PhoneNumber = dto.PhoneNumber,
+                Belt = beltColor,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var result = await _userManager.CreateAsync(user, dto.Password);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+            }
+
+            await _userManager.AddToRoleAsync(user, dto.Role);
+            _logger.LogInformation("Admin created new user: {Email} with role: {Role}", dto.Email, dto.Role);
+
+            return Ok(new UserDto
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email!,
+                PhoneNumber = user.PhoneNumber,
+                Belt = user.Belt.HasValue ? user.Belt.Value.ToString() : "Not Set",
+                Role = dto.Role
+            });
         }
     }
 }
