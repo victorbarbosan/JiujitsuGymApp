@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { User } from '../../types/user'
+import '../shared/app-modal';
 
 const BELT_OPTIONS = ['White', 'Grey', 'Yellow', 'Orange', 'Green', 'Blue', 'Purple', 'Brown', 'Black'];
 const ROLE_OPTIONS = ['Member', 'Teacher', 'Admin'];
@@ -116,6 +117,79 @@ export class AdminUserManagementTable extends LitElement {
         }
     }
 
+    private renderModalContent() {
+        return html`
+            <form @submit=${this.submitCreate}>
+                <div class="modal-body">
+                    ${this.formErrors.length > 0 ? html`
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                ${this.formErrors.map(e => html`<li>${e}</li>`)}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">First Name</label>
+                            <input class="form-control" required
+                                   .value=${this.form.firstName}
+                                   @input=${(e: InputEvent) => this.updateField('firstName', (e.target as HTMLInputElement).value)} />
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Last Name</label>
+                            <input class="form-control" required
+                                   .value=${this.form.lastName}
+                                   @input=${(e: InputEvent) => this.updateField('lastName', (e.target as HTMLInputElement).value)} />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" required
+                               .value=${this.form.email}
+                               @input=${(e: InputEvent) => this.updateField('email', (e.target as HTMLInputElement).value)} />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number <span class="text-muted">(optional)</span></label>
+                        <input type="tel" class="form-control"
+                               .value=${this.form.phoneNumber}
+                               @input=${(e: InputEvent) => this.updateField('phoneNumber', (e.target as HTMLInputElement).value)} />
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Belt</label>
+                            <select class="form-select"
+                                    .value=${this.form.belt}
+                                    @change=${(e: Event) => this.updateField('belt', (e.target as HTMLSelectElement).value)}>
+                                ${BELT_OPTIONS.map(b => html`<option value=${b} ?selected=${this.form.belt === b}>${b}</option>`)}
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Role</label>
+                            <select class="form-select"
+                                    .value=${this.form.role}
+                                    @change=${(e: Event) => this.updateField('role', (e.target as HTMLSelectElement).value)}>
+                                ${ROLE_OPTIONS.map(r => html`<option value=${r} ?selected=${this.form.role === r}>${r}</option>`)}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" required minlength="6"
+                               .value=${this.form.password}
+                               @input=${(e: InputEvent) => this.updateField('password', (e.target as HTMLInputElement).value)} />
+                        <small class="form-text text-muted">Minimum 6 characters.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" @click=${() => this.closeModal()}>Cancel</button>
+                    <button type="submit" class="btn btn-primary" ?disabled=${this.isSubmitting}>
+                        ${this.isSubmitting ? 'Creating...' : 'Create User'}
+                    </button>
+                </div>
+            </form>
+        `;
+    }
+
     render() {
         return html`
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -152,86 +226,12 @@ export class AdminUserManagementTable extends LitElement {
             ${this.isLoading ? 'Oss... Loading' : 'Load More Members'}
         </button>
 
-        ${this.showModal ? html`
-        <div class="modal d-block" tabindex="-1" style="background:rgba(0,0,0,0.5);">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Create New User</h5>
-                        <button type="button" class="btn-close" @click=${this.closeModal}></button>
-                    </div>
-                    <form @submit=${this.submitCreate}>
-                        <div class="modal-body">
-                            ${this.formErrors.length > 0 ? html`
-                                <div class="alert alert-danger">
-                                    <ul class="mb-0">
-                                        ${this.formErrors.map(e => html`<li>${e}</li>`)}
-                                    </ul>
-                                </div>
-                            ` : ''}
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <label class="form-label">First Name</label>
-                                    <input class="form-control" required
-                                           .value=${this.form.firstName}
-                                           @input=${(e: InputEvent) => this.updateField('firstName', (e.target as HTMLInputElement).value)} />
-                                </div>
-                                <div class="col">
-                                    <label class="form-label">Last Name</label>
-                                    <input class="form-control" required
-                                           .value=${this.form.lastName}
-                                           @input=${(e: InputEvent) => this.updateField('lastName', (e.target as HTMLInputElement).value)} />
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" required
-                                       .value=${this.form.email}
-                                       @input=${(e: InputEvent) => this.updateField('email', (e.target as HTMLInputElement).value)} />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Phone Number <span class="text-muted">(optional)</span></label>
-                                <input type="tel" class="form-control"
-                                       .value=${this.form.phoneNumber}
-                                       @input=${(e: InputEvent) => this.updateField('phoneNumber', (e.target as HTMLInputElement).value)} />
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <label class="form-label">Belt</label>
-                                    <select class="form-select"
-                                            .value=${this.form.belt}
-                                            @change=${(e: Event) => this.updateField('belt', (e.target as HTMLSelectElement).value)}>
-                                        ${BELT_OPTIONS.map(b => html`<option value=${b} ?selected=${this.form.belt === b}>${b}</option>`)}
-                                    </select>
-                                </div>
-                                <div class="col">
-                                    <label class="form-label">Role</label>
-                                    <select class="form-select"
-                                            .value=${this.form.role}
-                                            @change=${(e: Event) => this.updateField('role', (e.target as HTMLSelectElement).value)}>
-                                        ${ROLE_OPTIONS.map(r => html`<option value=${r} ?selected=${this.form.role === r}>${r}</option>`)}
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Password</label>
-                                <input type="password" class="form-control" required minlength="6"
-                                       .value=${this.form.password}
-                                       @input=${(e: InputEvent) => this.updateField('password', (e.target as HTMLInputElement).value)} />
-                                <small class="form-text text-muted">Minimum 6 characters.</small>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" @click=${this.closeModal}>Cancel</button>
-                            <button type="submit" class="btn btn-primary" ?disabled=${this.isSubmitting}>
-                                ${this.isSubmitting ? 'Creating...' : 'Create User'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        ` : ''}
+        <app-modal
+            title="Create New User"
+            ?open=${this.showModal}
+            .content=${this.renderModalContent.bind(this)}
+            @modal-close=${this.closeModal}>
+        </app-modal>
     `;
     }
 }
