@@ -2,13 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { User } from '../../types/user'
 import '../shared/app-modal';
-
-const BELT_OPTIONS = ['White', 'Grey', 'Yellow', 'Orange', 'Green', 'Blue', 'Purple', 'Brown', 'Black'];
-const ROLE_OPTIONS = ['Member', 'Teacher', 'Admin'];
-
-function getAntiForgeryToken(): string {
-    return (document.querySelector('input[name="__RequestVerificationToken"]') as HTMLInputElement)?.value ?? '';
-}
+import { BELT_OPTIONS, ROLE_OPTIONS, openModal, closeModal, loadMore, submitCreate } from './admin-controls.js';
 
 @customElement('admin-user-management-table')
 export class AdminUserManagementTable extends LitElement {
@@ -55,71 +49,29 @@ export class AdminUserManagementTable extends LitElement {
         }
     }
 
-    async loadMore() {
-        if (this.isLoading) return;
-        this.isLoading = true;
-        try {
-            const response = await fetch(`/Admin/GetUsers?skip=${this.skip}`);
-            if (!response.ok) throw new Error('Failed to fetch');
-            const newUsers: User[] = await response.json();
-            this.users = [...this.users, ...newUsers];
-            this.skip += newUsers.length;
-        } catch (error) {
-            console.error("Member Load Error:", error);
-        } finally {
-            this.isLoading = false;
-        }
+    private loadMore() {
+        loadMore(this);
     }
 
     private openModal() {
-        this.form = { firstName: '', lastName: '', email: '', phoneNumber: '', belt: 'White', password: '', role: 'Member' };
-        this.formErrors = [];
-        this.showModal = true;
+        openModal(this);
     }
 
     private closeModal() {
-        this.showModal = false;
+        closeModal(this);
     }
 
     private updateField(field: keyof typeof this.form, value: string) {
         this.form = { ...this.form, [field]: value };
     }
 
-    async submitCreate(e: Event) {
-        e.preventDefault();
-        if (this.isSubmitting) return;
-        this.isSubmitting = true;
-        this.formErrors = [];
-
-        try {
-            const response = await fetch('/Admin/CreateUser', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': getAntiForgeryToken()
-                },
-                body: JSON.stringify(this.form)
-            });
-
-            if (response.ok) {
-                const newUser: User = await response.json();
-                this.users = [newUser, ...this.users];
-                this.skip += 1;
-                this.closeModal();
-            } else {
-                const data = await response.json();
-                this.formErrors = data.errors ?? ['An unexpected error occurred.'];
-            }
-        } catch {
-            this.formErrors = ['Network error. Please try again.'];
-        } finally {
-            this.isSubmitting = false;
-        }
+    private submitCreate(e: Event) {
+        submitCreate(this, e);
     }
 
     private renderModalContent() {
         return html`
-            <form @submit=${this.submitCreate}>
+            <form @submit=${this.submitCreate.bind(this)}>
                 <div class="modal-body">
                     ${this.formErrors.length > 0 ? html`
                         <div class="alert alert-danger">
