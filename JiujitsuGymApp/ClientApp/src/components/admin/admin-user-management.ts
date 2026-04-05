@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { User } from '../../types/user'
-import '../shared/app-modal';
-import { BELT_OPTIONS, ROLE_OPTIONS, openModal, closeModal, loadMore, submitCreate } from './admin-controls.js';
+import { User } from '../../types/user';
+import { loadMore } from './admin-controls.js';
+import './create-user-modal.js';
 
 @customElement('admin-user-management-table')
 export class AdminUserManagementTable extends LitElement {
@@ -21,15 +21,9 @@ export class AdminUserManagementTable extends LitElement {
     private isLoading: boolean = false;
     @state()
     private showModal: boolean = false;
-    @state()
-    private isSubmitting: boolean = false;
-    @state()
-    private formErrors: string[] = [];
-    @state()
-    private form = { firstName: '', lastName: '', email: '', phoneNumber: '', belt: 'White', password: '', role: 'Member' };
 
     static styles = css`
-    :host { display : block}
+    :host { display: block; }
     .btn-primary {
         background-color: var(--color-brand-primary, #4958ff);
         color: var(--color-text-inverse, #ffffff);
@@ -49,104 +43,21 @@ export class AdminUserManagementTable extends LitElement {
         }
     }
 
-    private loadMore() {
-        loadMore(this);
+    private handleUserCreated(e: CustomEvent) {
+        this.users = [e.detail.user, ...this.users];
+        this.skip += 1;
+        this.showModal = false;
     }
 
-    private openModal() {
-        openModal(this);
-    }
-
-    private closeModal() {
-        closeModal(this);
-    }
-
-    private updateField(field: keyof typeof this.form, value: string) {
-        this.form = { ...this.form, [field]: value };
-    }
-
-    private submitCreate(e: Event) {
-        submitCreate(this, e);
-    }
-
-    private renderModalContent() {
-        return html`
-            <form @submit=${this.submitCreate.bind(this)}>
-                <div class="modal-body">
-                    ${this.formErrors.length > 0 ? html`
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                ${this.formErrors.map(e => html`<li>${e}</li>`)}
-                            </ul>
-                        </div>
-                    ` : ''}
-                    <div class="row mb-3">
-                        <div class="col">
-                            <label class="form-label">First Name</label>
-                            <input class="form-control" required
-                                   .value=${this.form.firstName}
-                                   @input=${(e: InputEvent) => this.updateField('firstName', (e.target as HTMLInputElement).value)} />
-                        </div>
-                        <div class="col">
-                            <label class="form-label">Last Name</label>
-                            <input class="form-control" required
-                                   .value=${this.form.lastName}
-                                   @input=${(e: InputEvent) => this.updateField('lastName', (e.target as HTMLInputElement).value)} />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" required
-                               .value=${this.form.email}
-                               @input=${(e: InputEvent) => this.updateField('email', (e.target as HTMLInputElement).value)} />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Phone Number <span class="text-muted">(optional)</span></label>
-                        <input type="tel" class="form-control"
-                               .value=${this.form.phoneNumber}
-                               @input=${(e: InputEvent) => this.updateField('phoneNumber', (e.target as HTMLInputElement).value)} />
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col">
-                            <label class="form-label">Belt</label>
-                            <select class="form-select"
-                                    .value=${this.form.belt}
-                                    @change=${(e: Event) => this.updateField('belt', (e.target as HTMLSelectElement).value)}>
-                                ${BELT_OPTIONS.map(b => html`<option value=${b} ?selected=${this.form.belt === b}>${b}</option>`)}
-                            </select>
-                        </div>
-                        <div class="col">
-                            <label class="form-label">Role</label>
-                            <select class="form-select"
-                                    .value=${this.form.role}
-                                    @change=${(e: Event) => this.updateField('role', (e.target as HTMLSelectElement).value)}>
-                                ${ROLE_OPTIONS.map(r => html`<option value=${r} ?selected=${this.form.role === r}>${r}</option>`)}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" class="form-control" required minlength="6"
-                               .value=${this.form.password}
-                               @input=${(e: InputEvent) => this.updateField('password', (e.target as HTMLInputElement).value)} />
-                        <small class="form-text text-muted">Minimum 6 characters.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" @click=${() => this.closeModal()}>Cancel</button>
-                    <button type="submit" class="btn btn-primary" ?disabled=${this.isSubmitting}>
-                        ${this.isSubmitting ? 'Creating...' : 'Create User'}
-                    </button>
-                </div>
-            </form>
-        `;
+    private async handleLoadMore() {
+        await loadMore(this);
     }
 
     render() {
         return html`
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="mb-0">Members</h5>
-            <button class="btn btn-primary" @click=${this.openModal}>
+            <button class="btn btn-primary" @click=${() => this.showModal = true}>
                 <i class="fas fa-user-plus me-1"></i> Create User
             </button>
         </div>
@@ -173,17 +84,16 @@ export class AdminUserManagementTable extends LitElement {
         </div>
 
         <button class="btn btn-primary mt-3"
-                @click=${this.loadMore}
+                @click=${this.handleLoadMore}
                 ?disabled=${this.isLoading}>
             ${this.isLoading ? 'Oss... Loading' : 'Load More Members'}
         </button>
 
-        <app-modal
-            title="Create New User"
+        <create-user-modal
             ?open=${this.showModal}
-            .content=${this.renderModalContent.bind(this)}
-            @modal-close=${this.closeModal}>
-        </app-modal>
-    `;
+            @user-created=${this.handleUserCreated}
+            @modal-close=${() => this.showModal = false}>
+        </create-user-modal>
+        `;
     }
 }

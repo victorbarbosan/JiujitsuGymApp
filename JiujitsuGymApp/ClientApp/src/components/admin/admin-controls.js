@@ -34,7 +34,7 @@ export async function loadMore(component) {
     }
 }
 
-export async function submitCreate(component, e) {
+export async function submitCreate(component, e, onSuccess) {
     e.preventDefault();
     if (component.isSubmitting) return;
     component.isSubmitting = true;
@@ -52,9 +52,7 @@ export async function submitCreate(component, e) {
 
         if (response.ok) {
             const newUser = await response.json();
-            component.users = [newUser, ...(component.users || [])];
-            component.skip = (component.skip ?? 0) + 1;
-            closeModal(component);
+            if (onSuccess) onSuccess(newUser);
         } else {
             const data = await response.json();
             component.formErrors = data.errors ?? ['An unexpected error occurred.'];

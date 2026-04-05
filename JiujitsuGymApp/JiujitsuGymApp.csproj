@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ClientApp\src\components\shared\" />
     <Folder Include="ClientApp\src\types\" />
   </ItemGroup>
 
