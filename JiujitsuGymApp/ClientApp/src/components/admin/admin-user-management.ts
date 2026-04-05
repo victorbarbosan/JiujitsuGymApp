@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { User } from '../../types/user';
 import { loadMore } from './admin-controls.js';
 import './create-user-modal.js';
+import '../shared/search-bar.js';
 
 @customElement('admin-user-management-table')
 export class AdminUserManagementTable extends LitElement {
@@ -21,6 +22,8 @@ export class AdminUserManagementTable extends LitElement {
     private isLoading: boolean = false;
     @state()
     private showModal: boolean = false;
+    @state()
+    private searchQuery: string = '';
 
     static styles = css`
     :host { display: block; }
@@ -43,6 +46,20 @@ export class AdminUserManagementTable extends LitElement {
         }
     }
 
+    private get filteredUsers(): User[] {
+        const q = this.searchQuery.toLowerCase();
+        if (!q) return this.users;
+        return this.users.filter(u =>
+            `${u.firstName} ${u.lastName}`.toLowerCase().includes(q) ||
+            u.email.toLowerCase().includes(q) ||
+            u.belt.toLowerCase().includes(q)
+        );
+    }
+
+    private handleSearchChange(e: CustomEvent) {
+        this.searchQuery = e.detail.query;
+    }
+
     private handleUserCreated(e: CustomEvent) {
         this.users = [e.detail.user, ...this.users];
         this.skip += 1;
@@ -62,6 +79,13 @@ export class AdminUserManagementTable extends LitElement {
             </button>
         </div>
 
+        <div class="mb-3">
+            <search-bar
+                placeholder="Search by name, email or belt..."
+                @search-change=${this.handleSearchChange}>
+            </search-bar>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead class="border-bottom">
@@ -72,7 +96,7 @@ export class AdminUserManagementTable extends LitElement {
                     </tr>
                 </thead>
                 <tbody>
-                    ${this.users.map(u => html`
+                    ${this.filteredUsers.map(u => html`
                         <tr>
                             <td>${u.firstName} ${u.lastName}</td>
                             <td>${u.email}</td>
