@@ -57,18 +57,7 @@ export class SearchBar extends LitElement {
           placeholder=${this.placeholder}
           .value=${this.value}
           @input=${this.handleInput}
-        />
-        ${this.value
-          ? html`
-              <button
-                class="btn btn-outline-secondary"
-                type="button"
-                @click=${this.handleClear}
-              >
-                <i class="fas fa-times"></i>
-              </button>
-            `
-          : ""}
+        />        
       </div>
     `;
   }
