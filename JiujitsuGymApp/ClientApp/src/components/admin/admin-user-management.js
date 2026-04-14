@@ -11,6 +11,7 @@ class AdminUserManagementTable extends LitElement {
         isLoading: { state: true },
         showModal: { state: true },
         searchQuery: { state: true },
+        hasMore: { state: true },
     };
 
     createRenderRoot() {
@@ -25,12 +26,14 @@ class AdminUserManagementTable extends LitElement {
         this.isLoading = false;
         this.showModal = false;
         this.searchQuery = '';
+        this.hasMore = true;
     }
 
     connectedCallback() {
         super.connectedCallback();
         if (this.initialUsers.length > 0) {
             this.users = [...this.initialUsers];
+            this.hasMore = this.initialUsers.length === this.skip;
         }
     }
 
@@ -86,11 +89,13 @@ class AdminUserManagementTable extends LitElement {
             </table>
         </div>
 
-        <button class="btn btn-primary mt-3"
-                @click=${this.handleLoadMore}
-                ?disabled=${this.isLoading}>
-            ${this.isLoading ? 'Oss... Loading' : 'Load More Members'}
-        </button>
+        ${this.hasMore ? html`
+            <button class="btn btn-primary mt-3"
+                    @click=${this.handleLoadMore}
+                    ?disabled=${this.isLoading}>
+                ${this.isLoading ? 'Oss... Loading' : 'Load More Members'}
+            </button>
+        ` : ''}
 
         <create-user-modal
             ?open=${this.showModal}

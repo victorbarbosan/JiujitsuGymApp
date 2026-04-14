@@ -30,6 +30,7 @@ export async function loadMore(component) {
         const newUsers = await fetchUsers(component.skip ?? 0, component.searchQuery ?? '');
         component.users = [...(component.users || []), ...newUsers];
         component.skip = (component.skip ?? 0) + newUsers.length;
+        component.hasMore = newUsers.length === (component.pageSize ?? 50);
     } catch (error) {
         console.error('Member Load Error:', error);
         throw error;
@@ -45,6 +46,7 @@ export async function searchUsers(component, query) {
         const users = await fetchUsers(0, query);
         component.users = users;
         component.skip = users.length;
+        component.hasMore = users.length === (component.pageSize ?? 50);
     } catch (error) {
         console.error('Search Error:', error);
         throw error;
