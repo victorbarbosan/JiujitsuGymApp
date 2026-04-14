@@ -80,15 +80,17 @@ namespace JiujitsuGymApp.Controllers
                 .Take(_pageSize)
                 .ToListAsync();
 
-            return Json(userList.Select(u => new
+            var result = userList.Select(u => new UserDto
             {
-                u.Id,
-                u.FirstName,
-                u.LastName,
-                u.Email,
-                u.PhoneNumber,
+                Id = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email!,
+                PhoneNumber = u.PhoneNumber,
                 Belt = u.Belt.HasValue ? u.Belt.Value.ToString() : "Not Set"
-            }));
+            }).ToList();
+
+            return Json(result);
         }
 
         // POST : Admin/CreateUser
