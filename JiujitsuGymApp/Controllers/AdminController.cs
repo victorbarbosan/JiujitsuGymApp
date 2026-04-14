@@ -54,10 +54,27 @@ namespace JiujitsuGymApp.Controllers
 
         // GET : Admin/GetUsers
         [HttpGet]
-        public async Task<IActionResult> GetUsers(int skip = 0)
+        public async Task<IActionResult> GetUsers(int skip = 0, string? query = null)
         {
-            var userList = await _userManager.Users
-                .AsNoTracking()
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
+                return BadRequest(new { errors });
+            }
+
+            var users = _userManager.Users.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var q = query.Trim().ToLower();
+                users = users.Where(u =>
+                    (u.FirstName + " " + u.LastName).ToLower().Contains(q) ||
+                    u.Email!.ToLower().Contains(q));
+            }
+
+            var userList = await users
                 .OrderBy(u => u.FirstName)
                 .Skip(skip)
                 .Take(_pageSize)

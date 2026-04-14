@@ -15,19 +15,38 @@ export function closeModal(component) {
     component.showModal = false;
 }
 
+async function fetchUsers(skip, query) {
+    const params = new URLSearchParams({ skip });
+    if (query) params.set('query', query);
+    const response = await fetch(`/Admin/GetUsers?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch');
+    return response.json();
+}
+
 export async function loadMore(component) {
     if (component.isLoading) return;
     component.isLoading = true;
     try {
-        const skip = component.skip ?? 0;
-        const response = await fetch(`/Admin/GetUsers?skip=${skip}`);
-        if (!response.ok) throw new Error('Failed to fetch');
-        const newUsers = await response.json();
+        const newUsers = await fetchUsers(component.skip ?? 0, component.searchQuery ?? '');
         component.users = [...(component.users || []), ...newUsers];
-        component.skip = skip + (Array.isArray(newUsers) ? newUsers.length : 0);
-        return newUsers;
+        component.skip = (component.skip ?? 0) + newUsers.length;
     } catch (error) {
         console.error('Member Load Error:', error);
+        throw error;
+    } finally {
+        component.isLoading = false;
+    }
+}
+
+export async function searchUsers(component, query) {
+    if (component.isLoading) return;
+    component.isLoading = true;
+    try {
+        const users = await fetchUsers(0, query);
+        component.users = users;
+        component.skip = users.length;
+    } catch (error) {
+        console.error('Search Error:', error);
         throw error;
     } finally {
         component.isLoading = false;
