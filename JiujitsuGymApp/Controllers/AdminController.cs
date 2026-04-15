@@ -39,31 +39,13 @@ namespace JiujitsuGymApp.Controllers
                 .Take(_pageSize)
                 .ToListAsync();
 
-            var usersDto = initialUsers.Select(u => new UserDto
-            {
-                Id = u.Id,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                Email = u.Email,
-                PhoneNumber = u.PhoneNumber,
-                Belt = u.Belt.HasValue ? u.Belt.Value.ToString() : "Not Set"
-            }).ToList();
-
-            return View(usersDto);
+            return View(initialUsers.Select(u => ToDto(u)).ToList());
         }
 
         // GET : Admin/GetUsers
         [HttpGet]
         public async Task<IActionResult> GetUsers(int skip = 0, string? query = null)
         {
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage);
-                return BadRequest(new { errors });
-            }
-
             var users = _userManager.Users.AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(query))
@@ -80,17 +62,7 @@ namespace JiujitsuGymApp.Controllers
                 .Take(_pageSize)
                 .ToListAsync();
 
-            var result = userList.Select(u => new UserDto
-            {
-                Id = u.Id,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                Email = u.Email!,
-                PhoneNumber = u.PhoneNumber,
-                Belt = u.Belt.HasValue ? u.Belt.Value.ToString() : "Not Set"
-            }).ToList();
-
-            return Json(result);
+            return Json(userList.Select(u => ToDto(u)).ToList());
         }
 
         // POST : Admin/CreateUser
@@ -107,15 +79,10 @@ namespace JiujitsuGymApp.Controllers
             }
 
             if (!_allowedRoles.Contains(dto.Role))
-            {
                 return BadRequest(new { errors = new[] { $"Invalid role '{dto.Role}'." } });
-            }
 
-            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
-            if (existingUser != null)
-            {
+            if (await _userManager.FindByEmailAsync(dto.Email) is not null)
                 return BadRequest(new { errors = new[] { "A user with this email already exists." } });
-            }
 
             var beltColor = Enum.TryParse<BeltColor>(dto.Belt, out var parsed) ? parsed : BeltColor.White;
 
@@ -133,23 +100,23 @@ namespace JiujitsuGymApp.Controllers
             var result = await _userManager.CreateAsync(user, dto.Password);
 
             if (!result.Succeeded)
-            {
                 return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
-            }
 
             await _userManager.AddToRoleAsync(user, dto.Role);
             _logger.LogInformation("Admin created new user: {Email} with role: {Role}", dto.Email, dto.Role);
 
-            return Ok(new UserDto
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email!,
-                PhoneNumber = user.PhoneNumber,
-                Belt = user.Belt.HasValue ? user.Belt.Value.ToString() : "Not Set",
-                Role = dto.Role
-            });
+            return Ok(ToDto(user, dto.Role));
         }
+
+        private static UserDto ToDto(User u, string role = "Member") => new()
+        {
+            Id = u.Id,
+            FirstName = u.FirstName,
+            LastName = u.LastName,
+            Email = u.Email!,
+            PhoneNumber = u.PhoneNumber,
+            Belt = u.Belt.HasValue ? u.Belt.Value.ToString() : "Not Set",
+            Role = role
+        };
     }
 }
