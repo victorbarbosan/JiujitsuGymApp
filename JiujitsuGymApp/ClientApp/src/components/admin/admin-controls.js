@@ -15,9 +15,11 @@ export function closeModal(component) {
     component.showModal = false;
 }
 
-async function fetchUsers(skip, query) {
+async function fetchUsers(skip, query, sortBy, SortDir) {
     const params = new URLSearchParams({ skip });
     if (query) params.set('query', query);
+    if (sortBy) params.set('sortBy', sortBy);
+    if (SortDir) params.set('SortDir', SortDir);
     const response = await fetch(`/Admin/GetUsers?${params}`);
     if (!response.ok) throw new Error('Failed to fetch');
     return response.json();
@@ -39,11 +41,11 @@ export async function loadMore(component) {
     }
 }
 
-export async function searchUsers(component, query) {
+export async function searchUsers(component, query, sortBy, sortDir) {
     if (component.isLoading) return;
     component.isLoading = true;
     try {
-        const users = await fetchUsers(0, query);
+        const users = await fetchUsers(0, query, sortBy, sortDir);
         component.users = users;
         component.skip = users.length;
         component.hasMore = users.length === (component.pageSize ?? 50);

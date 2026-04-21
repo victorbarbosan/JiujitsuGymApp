@@ -44,7 +44,7 @@ namespace JiujitsuGymApp.Controllers
 
         // GET : Admin/GetUsers
         [HttpGet]
-        public async Task<IActionResult> GetUsers(int skip = 0, string? query = null)
+        public async Task<IActionResult> GetUsers(int skip = 0, string? query = null, string? sortBy = "firstName", string? sortDir = "asc")
         {
             var users = _userManager.Users.AsNoTracking();
 
@@ -56,8 +56,16 @@ namespace JiujitsuGymApp.Controllers
                     u.Email!.ToLower().Contains(q));
             }
 
+            var dir = sortDir.ToLower() ?? "asc";
+
+            users = dir switch
+            {
+                "asc" => users.OrderBy(u => u.FirstName),
+                "desc" => users.OrderByDescending(u => u.FirstName),
+                _ => users.OrderBy(u => u.FirstName)
+            };
+
             var userList = await users
-                .OrderBy(u => u.FirstName)
                 .Skip(skip)
                 .Take(_pageSize)
                 .ToListAsync();

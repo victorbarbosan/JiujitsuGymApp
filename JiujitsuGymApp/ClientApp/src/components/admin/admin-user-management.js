@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 import { loadMore, searchUsers } from './admin-controls.js';
 import './create-user-modal.js';
 import '../shared/search-bar.js';
+import './sort-header.js';
 
 class AdminUserManagementTable extends LitElement {
     static properties = {
@@ -12,6 +13,8 @@ class AdminUserManagementTable extends LitElement {
         showModal: { state: true },
         searchQuery: { state: true },
         hasMore: { state: true },
+        sortBy: { state: true },
+        sortDir: { state: true },
     };
 
     createRenderRoot() {
@@ -27,6 +30,8 @@ class AdminUserManagementTable extends LitElement {
         this.showModal = false;
         this.searchQuery = '';
         this.hasMore = true;
+        this.sortBy = 'name';
+        this.sortDir = 'asc';
     }
 
     connectedCallback() {
@@ -40,6 +45,12 @@ class AdminUserManagementTable extends LitElement {
     async handleSearchChange(e) {
         this.searchQuery = e.detail.query;
         await searchUsers(this, this.searchQuery);
+    }
+
+    async handleSortChanged(e) {
+        this.sortBy = e.detail.field;
+        this.sortDir = e.detail.direction;
+        await searchUsers(this, this.searchQuery, this.sortBy, this.sortDir);
     }
 
     handleUserCreated(e) {
@@ -72,8 +83,24 @@ class AdminUserManagementTable extends LitElement {
             <table class="table table-hover align-middle">
                 <thead class="border-bottom">
                     <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">Email</th>
+                        <th scope="col">
+                            <sort-header
+                                label="Name"
+                                field="name"
+                                currentField=${this.sortBy}
+                                currentDir=${this.sortDir}
+                                @sort-changed=${this.handleSortChanged}>
+                            </sort-header>
+                        </th>
+                        <th scope="col">
+                            <sort-header
+                                label="Email"
+                                field="email"
+                                currentField=${this.sortBy}
+                                currentDir=${this.sortDir}
+                                @sort-changed=${this.handleSortChanged}>
+                            </sort-header>
+                        </th>
                         <th scope="col">Belt</th>
                     </tr>
                 </thead>
