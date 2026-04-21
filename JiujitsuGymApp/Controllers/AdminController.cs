@@ -1,4 +1,5 @@
-﻿using JiujitsuGymApp.Dtos;
+﻿using JiujitsuGymApp.Data;
+using JiujitsuGymApp.Dtos;
 using JiujitsuGymApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +15,7 @@ namespace JiujitsuGymApp.Controllers
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<AdminController> _logger;
+        private readonly ApplicationDbContext _context;
 
         private static readonly HashSet<string> _allowedRoles = ["Admin", "Member", "Teacher"];
 
@@ -21,12 +23,14 @@ namespace JiujitsuGymApp.Controllers
             UserManager<User> userManager,
             RoleManager<IdentityRole> roleManager,
             ILogger<AdminController> logger,
-            IConfiguration config)
+            IConfiguration config,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _logger = logger;
             _pageSize = config.GetValue<int>("Pagination:DefaultPageSize", 50);
+            _context = context;
         }
 
         // GET : Admin/
@@ -39,7 +43,98 @@ namespace JiujitsuGymApp.Controllers
                 .Take(_pageSize)
                 .ToListAsync();
 
+            var initialSchedules = await _context.ClassSchedules
+                .AsNoTracking()
+                .Include(s => s.Teacher)
+                .OrderBy(s => s.DayOfWeek).ThenBy(s => s.TimeOfDay)
+                .ToListAsync();
+
+            ViewBag.InitialSchedules = initialSchedules.Select(ToScheduleDto).ToList();
+
             return View(initialUsers.Select(u => ToDto(u)).ToList());
+        }
+
+        // GET : Admin/GetSchedules
+        [HttpGet]
+        public async Task<IActionResult> GetSchedules()
+        {
+            var schedules = await _context.ClassSchedules
+                .AsNoTracking()
+                .Include(s => s.Teacher)
+                .OrderBy(s => s.DayOfWeek).ThenBy(s => s.TimeOfDay)
+                .ToListAsync();
+
+            return Json(schedules.Select(ToScheduleDto));
+        }
+
+        // POST : Admin/CreateSchedule
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateSchedule([FromBody] CreateClassScheduleDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return BadRequest(new { errors });
+            }
+
+            if (!Enum.TryParse<DayOfWeek>(dto.DayOfWeek, out var day))
+                return BadRequest(new { errors = new[] { "Invalid day of week." } });
+
+            if (!TimeSpan.TryParse(dto.TimeOfDay, out var time))
+                return BadRequest(new { errors = new[] { "Invalid time format. Use HH:mm." } });
+
+            var teacher = await _userManager.FindByIdAsync(dto.TeacherId);
+            if (teacher is null)
+                return BadRequest(new { errors = new[] { "Teacher not found." } });
+
+            var schedule = new ClassSchedule
+            {
+                TeacherId = dto.TeacherId,
+                Location = dto.Location,
+                DayOfWeek = day,
+                TimeOfDay = time,
+                IsActive = true
+            };
+
+            _context.ClassSchedules.Add(schedule);
+            await _context.SaveChangesAsync();
+
+            schedule.Teacher = teacher;
+            _logger.LogInformation("Schedule created: {Day} {Time} at {Location}", day, time, dto.Location);
+
+            return Ok(ToScheduleDto(schedule));
+        }
+
+        // DELETE : Admin/DeleteSchedule/5
+        [HttpDelete]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteSchedule(int id)
+        {
+            var schedule = await _context.ClassSchedules.FindAsync(id);
+            if (schedule is null) return NotFound();
+
+            schedule.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        // GET : Admin/GetTeachers
+        [HttpGet]
+        public async Task<IActionResult> GetTeachers()
+        {
+            var teachers = await _userManager.GetUsersInRoleAsync("Teacher");
+            var admins = await _userManager.GetUsersInRoleAsync("Admin");
+
+            var eligible = teachers.Concat(admins)
+                .GroupBy(u => u.Id) // If a user is in both roles, this groups them together
+                .Select(g => g.First()) // Take one instance of the user
+                .OrderBy(u => u.FirstName)
+                .Select(u => new { id = u.Id, name = $"{u.FirstName} {u.LastName}" })
+                .ToList();
+
+            return Json(eligible);
         }
 
         // GET : Admin/GetUsers
@@ -56,7 +151,7 @@ namespace JiujitsuGymApp.Controllers
                     u.Email!.ToLower().Contains(q));
             }
 
-            var dir = sortDir.ToLower() ?? "asc";
+            var dir = sortDir?.ToLower() ?? "asc";
 
             users = dir switch
             {
@@ -65,11 +160,7 @@ namespace JiujitsuGymApp.Controllers
                 _ => users.OrderBy(u => u.FirstName)
             };
 
-            var userList = await users
-                .Skip(skip)
-                .Take(_pageSize)
-                .ToListAsync();
-
+            var userList = await users.Skip(skip).Take(_pageSize).ToListAsync();
             return Json(userList.Select(u => ToDto(u)).ToList());
         }
 
@@ -80,9 +171,7 @@ namespace JiujitsuGymApp.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage);
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 return BadRequest(new { errors });
             }
 
@@ -106,7 +195,6 @@ namespace JiujitsuGymApp.Controllers
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
-
             if (!result.Succeeded)
                 return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
 
@@ -115,6 +203,17 @@ namespace JiujitsuGymApp.Controllers
 
             return Ok(ToDto(user, dto.Role));
         }
+
+        private static ClassScheduleDto ToScheduleDto(ClassSchedule s) => new()
+        {
+            Id = s.Id,
+            TeacherId = s.TeacherId,
+            TeacherName = s.Teacher?.Name ?? string.Empty,
+            Location = s.Location,
+            DayOfWeek = s.DayOfWeek.ToString(),
+            TimeOfDay = s.TimeOfDay.ToString(@"hh\:mm"),
+            IsActive = s.IsActive
+        };
 
         private static UserDto ToDto(User u, string role = "Member") => new()
         {
@@ -126,5 +225,11 @@ namespace JiujitsuGymApp.Controllers
             Belt = u.Belt.HasValue ? u.Belt.Value.ToString() : "Not Set",
             Role = role
         };
+
+        private sealed class UserIdComparer : IEqualityComparer<User>
+        {
+            public bool Equals(User? x, User? y) => x?.Id == y?.Id;
+            public int GetHashCode(User obj) => obj.Id.GetHashCode();
+        }
     }
 }
