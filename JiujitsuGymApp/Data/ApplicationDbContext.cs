@@ -13,6 +13,8 @@ namespace JiujitsuGymApp.Data
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Class> Classes { get; set; }
+        public DbSet<ClassSchedule> ClassSchedules { get; set; }
+        public DbSet<Attendance> Attendances { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,6 +32,17 @@ namespace JiujitsuGymApp.Data
                     .HasConversion<string>();
 
             });
+
+            modelBuilder.Entity<Attendance>()
+                .HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Prevent duplicate check-ins per student per class
+            modelBuilder.Entity<Attendance>()
+                .HasIndex(a => new { a.ClassId, a.UserId })
+                .IsUnique();
         }
     }
 }

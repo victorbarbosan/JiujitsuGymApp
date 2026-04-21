@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace JiujitsuGymApp.Models
 {
-    public class Class
+    public class ClassSchedule
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -12,25 +12,24 @@ namespace JiujitsuGymApp.Models
         [Required]
         public string TeacherId { get; set; } = string.Empty;
 
-        [Required]
         [ForeignKey("TeacherId")]
         public User Teacher { get; set; } = null!;
 
+        [Required, StringLength(100)]
         public string Location { get; set; } = "Not set";
 
-        public DateTime DateTime { get; set; }
+        /// <summary>0 = Sunday ... 6 = Saturday</summary>
+        [Required]
+        public DayOfWeek DayOfWeek { get; set; }
 
-        /// <summary>Null for manually created one-off classes.</summary>
-        public int? ClassScheduleId { get; set; }
+        /// <summary>Time of day, e.g. 07:00 or 19:00</summary>
+        [Required]
+        public TimeSpan TimeOfDay { get; set; }
 
-        [ForeignKey("ClassScheduleId")]
-        public ClassSchedule? Schedule { get; set; }
+        public bool IsActive { get; set; } = true;
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public DateTime? DeletedAt { get; set; }
-
-        public virtual ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
+        public virtual ICollection<Class> Sessions { get; set; } = new List<Class>();
     }
 }
