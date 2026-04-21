@@ -14,6 +14,6 @@
         @await Html.PartialAsync("_UsersTab", Model)
     </div>
     <div class="tab-pane fade" id="classes" role="tabpanel">
-        <p>Classes management...</p>
+        @await Html.PartialAsync("_ClassesTab", ViewBag.InitialSchedules as List<JiujitsuGymApp.Dtos.ClassScheduleDto>)
     </div>
 </div>
