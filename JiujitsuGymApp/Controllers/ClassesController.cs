@@ -1,5 +1,6 @@
 ﻿using JiujitsuGymApp.Data;
 using JiujitsuGymApp.Dtos;
+using JiujitsuGymApp.Models;
 using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +53,43 @@ namespace JiujitsuGymApp.Controllers
 
             var classes = await GetClassEventsAsync(fromDate, toDate, userId);
             return Json(classes);
+        }
+
+        // POST: Classes/CheckIn/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckIn(int id)
+        {
+            var userId = await _context.Users
+                .Where(u => u.UserName == User.Identity!.Name)
+                .Select(u => u.Id)
+                .FirstOrDefaultAsync();
+
+            if (userId is null)
+                return Unauthorized();
+
+            var classExists = await _context.Classes
+                .AnyAsync(c => c.Id == id && c.DeletedAt == null);
+
+            if (!classExists)
+                return NotFound();
+
+            var alreadyCheckedIn = await _context.Attendances
+                .AnyAsync(a => a.ClassId == id && a.UserId == userId);
+
+            if (alreadyCheckedIn)
+                return Conflict(new { error = "Already checked in to this class." });
+
+            _context.Attendances.Add(new Attendance
+            {
+                ClassId = id,
+                UserId = userId,
+                CheckedInAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
 
         private async Task<List<ClassEventDto>> GetClassEventsAsync(DateTime from, DateTime to, string? userId)
