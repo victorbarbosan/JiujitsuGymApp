@@ -98,20 +98,28 @@ class ClassCalendar extends LitElement {
     }
 
     async _handleCheckIn(classId) {
+        const isCheckedIn = this.classes.find(c => c.id === classId)?.checkedIn ?? false;
+        const url = `/Classes/${isCheckedIn ? 'UndoCheckIn' : 'CheckIn'}/${classId}`;
+        const method = isCheckedIn ? 'DELETE' : 'POST';
+
         try {
-            const res = await fetch(`/Classes/CheckIn/${classId}`, {
-                method: 'POST',
+            const res = await fetch(url, {
+                method,
                 headers: { 'RequestVerificationToken': getAntiForgeryToken() }
             });
             if (res.ok) {
                 this.classes = this.classes.map(c =>
                     c.id === classId
-                        ? { ...c, checkedIn: true, attendanceCount: c.attendanceCount + 1 }
+                        ? {
+                            ...c,
+                            checkedIn: !isCheckedIn,
+                            attendanceCount: c.attendanceCount + (isCheckedIn ? -1 : 1)
+                          }
                         : c
                 );
             }
         } catch {
-            console.error('Check-in failed');
+            console.error('Check-in toggle failed');
         }
     }
 
@@ -150,12 +158,13 @@ class ClassCalendar extends LitElement {
                     <span class="small text-muted">
                         <i class="fas fa-users me-1"></i>${c.attendanceCount}
                     </span>
-                    ${c.checkedIn
-                        ? html`<span class="badge bg-success"><i class="fas fa-check me-1"></i>Checked in</span>`
-                        : html`<button class="btn btn-primary btn-sm py-0 px-2"
-                                       @click=${() => this._handleCheckIn(c.id)}>
-                                   Check in
-                               </button>`}
+                    <button
+                        class="btn btn-sm py-0 px-2 ${c.checkedIn ? 'btn-success' : 'btn-outline-primary'}"
+                        @click=${() => this._handleCheckIn(c.id)}>
+                        ${c.checkedIn
+                            ? html`<i class="fas fa-check me-1"></i>Checked in`
+                            : 'Check in'}
+                    </button>
                 </div>
             </div>
         </div>`;

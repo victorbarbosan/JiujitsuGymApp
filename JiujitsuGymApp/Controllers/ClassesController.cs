@@ -92,6 +92,31 @@ namespace JiujitsuGymApp.Controllers
             return Ok();
         }
 
+        // DELETE: Classes/UndoCheckIn/5
+        [HttpDelete]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UndoCheckIn(int id)
+        {
+            var userId = await _context.Users
+                .Where(u => u.UserName == User.Identity!.Name)
+                .Select(u => u.Id)
+                .FirstOrDefaultAsync();
+
+            if (userId is null)
+                return Unauthorized();
+
+            var attendance = await _context.Attendances
+                .FirstOrDefaultAsync(a => a.ClassId == id && a.UserId == userId);
+
+            if (attendance is null)
+                return NotFound();
+
+            _context.Attendances.Remove(attendance);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
         private async Task<List<ClassEventDto>> GetClassEventsAsync(DateTime from, DateTime to, string? userId)
         {
             return await _context.Classes
