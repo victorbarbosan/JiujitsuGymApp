@@ -204,6 +204,67 @@ namespace JiujitsuGymApp.Controllers
             return Ok(ToDto(user, dto.Role));
         }
 
+        // GET : Admin/GetUser/abc123
+        [HttpGet]
+        public async Task<IActionResult> GetUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user is null) return NotFound();
+
+            var roles = await _userManager.GetRolesAsync(user);
+            return Json(ToDto(user, roles.FirstOrDefault() ?? "Member"));
+        }
+
+        // PUT : Admin/UpdateUser/abc123
+        [HttpPut]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return BadRequest(new { errors });
+            }
+
+            if (!_allowedRoles.Contains(dto.Role))
+                return BadRequest(new { errors = new[] { $"Invalid role '{dto.Role}'." } });
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user is null) return NotFound();
+
+            // Update email/username if changed
+            if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                var emailResult = await _userManager.SetEmailAsync(user, dto.Email);
+                if (!emailResult.Succeeded)
+                    return BadRequest(new { errors = emailResult.Errors.Select(e => e.Description) });
+
+                await _userManager.SetUserNameAsync(user, dto.Email);
+            }
+
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            user.PhoneNumber = dto.PhoneNumber;
+
+            if (Enum.TryParse<BeltColor>(dto.Belt, out var belt))
+                user.Belt = belt;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+                return BadRequest(new { errors = updateResult.Errors.Select(e => e.Description) });
+
+            // Sync role
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (!currentRoles.Contains(dto.Role))
+            {
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                await _userManager.AddToRoleAsync(user, dto.Role);
+            }
+
+            _logger.LogInformation("Admin updated user: {Email}", user.Email);
+            return Ok(ToDto(user, dto.Role));
+        }
+
         private static ClassScheduleDto ToScheduleDto(ClassSchedule s) => new()
         {
             Id = s.Id,
