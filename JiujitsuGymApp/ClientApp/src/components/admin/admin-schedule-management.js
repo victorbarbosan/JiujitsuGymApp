@@ -1,4 +1,5 @@
 import { LitElement, html } from 'lit';
+import '../shared/app-modal.js';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -9,11 +10,11 @@ function getAntiForgeryToken() {
 class AdminScheduleManagement extends LitElement {
     static properties = {
         initialSchedules: { type: Array, attribute: 'initial-schedules' },
-        schedules: { state: true },
-        teachers: { state: true },
-        showModal: { state: true },
-        form: { state: true },
-        formErrors: { state: true },
+        schedules:    { state: true },
+        teachers:     { state: true },
+        showModal:    { state: true },
+        form:         { state: true },
+        formErrors:   { state: true },
         isSubmitting: { state: true },
     };
 
@@ -85,77 +86,63 @@ class AdminScheduleManagement extends LitElement {
 
     async _handleDelete(id) {
         if (!confirm('Deactivate this recurring slot?')) return;
-
         await fetch(`/Admin/DeleteSchedule/${id}`, {
             method: 'DELETE',
             headers: { 'RequestVerificationToken': getAntiForgeryToken() }
         });
-
         this.schedules = this.schedules.filter(s => s.id !== id);
     }
 
-    _renderModal() {
-        if (!this.showModal) return '';
-
+    _renderModalContent() {
         return html`
-        <div class="modal d-block" tabindex="-1" style="background:rgba(0,0,0,.4)">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Add Recurring Slot</h5>
-                        <button type="button" class="btn-close" @click=${() => this.showModal = false}></button>
-                    </div>
-                    <form @submit=${this._handleSubmit}>
-                        <div class="modal-body">
-                            ${this.formErrors.length > 0 ? html`
-                                <div class="alert alert-danger">
-                                    <ul class="mb-0">${this.formErrors.map(e => html`<li>${e}</li>`)}</ul>
-                                </div>` : ''}
+        <form @submit=${this._handleSubmit}>
+            <div class="modal-body">
+                ${this.formErrors.length > 0 ? html`
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">${this.formErrors.map(e => html`<li>${e}</li>`)}</ul>
+                    </div>` : ''}
 
-                            <div class="mb-3">
-                                <label class="form-label">Instructor</label>
-                                <select class="form-select" required
-                                    .value=${this.form.teacherId}
-                                    @change=${e => this.form = { ...this.form, teacherId: e.target.value }}>
-                                    ${this.teachers.map(t => html`
-                                        <option value=${t.id}>${t.name}</option>`)}
-                                </select>
-                            </div>
+                <div class="mb-3">
+                    <label class="form-label">Instructor</label>
+                    <select class="form-select" required
+                        .value=${this.form.teacherId}
+                        @change=${e => this.form = { ...this.form, teacherId: e.target.value }}>
+                        ${this.teachers.map(t => html`<option value=${t.id}>${t.name}</option>`)}
+                    </select>
+                </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Location</label>
-                                <input class="form-control" required maxlength="100"
-                                    .value=${this.form.location}
-                                    @input=${e => this.form = { ...this.form, location: e.target.value }}
-                                    placeholder="e.g. Cambridge" />
-                            </div>
+                <div class="mb-3">
+                    <label class="form-label">Location</label>
+                    <input class="form-control" required maxlength="100"
+                        .value=${this.form.location}
+                        @input=${e => this.form = { ...this.form, location: e.target.value }}
+                        placeholder="e.g. Cambridge" />
+                </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Day of Week</label>
-                                <select class="form-select"
-                                    .value=${this.form.dayOfWeek}
-                                    @change=${e => this.form = { ...this.form, dayOfWeek: e.target.value }}>
-                                    ${DAYS.map(d => html`<option value=${d}>${d}</option>`)}
-                                </select>
-                            </div>
+                <div class="mb-3">
+                    <label class="form-label">Day of Week</label>
+                    <select class="form-select"
+                        .value=${this.form.dayOfWeek}
+                        @change=${e => this.form = { ...this.form, dayOfWeek: e.target.value }}>
+                        ${DAYS.map(d => html`<option value=${d}>${d}</option>`)}
+                    </select>
+                </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Time</label>
-                                <input type="time" class="form-control"
-                                    .value=${this.form.timeOfDay}
-                                    @change=${e => this.form = { ...this.form, timeOfDay: e.target.value }} />
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" @click=${() => this.showModal = false}>Cancel</button>
-                            <button type="submit" class="btn btn-primary" ?disabled=${this.isSubmitting}>
-                                ${this.isSubmitting ? 'Saving...' : 'Save Slot'}
-                            </button>
-                        </div>
-                    </form>
+                <div class="mb-3">
+                    <label class="form-label">Time</label>
+                    <input type="time" class="form-control"
+                        .value=${this.form.timeOfDay}
+                        @change=${e => this.form = { ...this.form, timeOfDay: e.target.value }} />
                 </div>
             </div>
-        </div>`;
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                    @click=${() => this.showModal = false}>Cancel</button>
+                <button type="submit" class="btn btn-primary" ?disabled=${this.isSubmitting}>
+                    ${this.isSubmitting ? 'Saving...' : 'Save Slot'}
+                </button>
+            </div>
+        </form>`;
     }
 
     render() {
@@ -188,14 +175,20 @@ class AdminScheduleManagement extends LitElement {
                                 <span class="ms-2 text-muted">${s.location}</span>
                                 <span class="ms-2 badge bg-secondary">${s.teacherName}</span>
                             </div>
-                            <button class="btn btn-sm btn-outline-danger" @click=${() => this._handleDelete(s.id)}>
+                            <button class="btn btn-sm btn-outline-danger"
+                                @click=${() => this._handleDelete(s.id)}>
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>`)}
                 </div>
             </div>`)}
 
-        ${this._renderModal()}`;
+        <app-modal
+            title="Add Recurring Slot"
+            ?open=${this.showModal}
+            .content=${this._renderModalContent.bind(this)}
+            @modal-close=${() => this.showModal = false}>
+        </app-modal>`;
     }
 }
 
