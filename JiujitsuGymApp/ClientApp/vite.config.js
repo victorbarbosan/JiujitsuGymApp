@@ -10,7 +10,7 @@ export default defineConfig({
         manifest: true,
 
         rollupOptions: {
-            input: './src/main.ts',
+            input: './src/main.js',
             output: {
                 entryFileNames: 'js/app.js',
                 chunkFileNames: 'js/[name].js',

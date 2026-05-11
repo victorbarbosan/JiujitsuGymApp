@@ -22,7 +22,8 @@
                           email="@Model.Email"
                           phone-number="@Model.PhoneNumber"
                           member-since="@Model.CreatedAt.ToString("yyyy-MM-dd")"
-                          last-login="@(Model.LastLoginAt?.ToString("yyyy-MM-dd") ?? "Never")">
+                          last-login="@(Model.LastLoginAt?.ToString("yyyy-MM-dd") ?? "Never")"
+                          attendance-count="@Model.TotalClassesAttended">
             </profile-card>
         </div>
     </div>

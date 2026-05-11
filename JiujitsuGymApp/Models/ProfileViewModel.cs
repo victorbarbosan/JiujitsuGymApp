@@ -42,10 +42,6 @@ namespace JiujitsuGymApp.Models
 
         public List<SelectListItem> BeltOptions { get; set; } = EnumHelpers.ToSelectList<BeltColor>();
 
-        // future ideas
-        /*
-		public int TotalClassesAttended { get; set; }
-		public int ClassesThisMonth { get; set; }
-		*/
+        public int TotalClassesAttended { get; set; }
     }
 }
