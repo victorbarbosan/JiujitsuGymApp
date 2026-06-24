@@ -1,21 +1,19 @@
-﻿using JiujitsuGymApp.Data;
-using JiujitsuGymApp.Dtos;
-using JiujitsuGymApp.Models;
-using JiujitsuGymApp.Services;
+﻿using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace JiujitsuGymApp.Controllers
 {
     public class ClassesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ClassService _classService;
         private readonly ScheduleService _scheduleService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public ClassesController(ApplicationDbContext context, ScheduleService scheduleService)
+        public ClassesController(ClassService classService, ScheduleService scheduleService, ICurrentUserService currentUserService)
         {
-            _context = context;
+            _classService = classService;
             _scheduleService = scheduleService;
+            _currentUserService = currentUserService;
         }
 
         // GET: Classes
@@ -26,12 +24,8 @@ namespace JiujitsuGymApp.Controllers
             var weekStart = DateTime.UtcNow.Date.AddDays(-(int)DateTime.UtcNow.DayOfWeek);
             var weekEnd = weekStart.AddDays(7);
 
-            var userId = await _context.Users
-                .Where(u => u.UserName == User.Identity!.Name)
-                .Select(u => u.Id)
-                .FirstOrDefaultAsync();
-
-            var classes = await GetClassEventsAsync(weekStart, weekEnd, userId);
+            var userId = await _currentUserService.GetUserIdAsync();
+            var classes = await _classService.GetClassEventsAsync(weekStart, weekEnd, userId);
 
             ViewBag.WeekStart = weekStart.ToString("yyyy-MM-dd");
             ViewBag.InitialClasses = classes;
@@ -46,12 +40,8 @@ namespace JiujitsuGymApp.Controllers
             if (!DateTime.TryParse(from, out var fromDate) || !DateTime.TryParse(to, out var toDate))
                 return BadRequest("Invalid date range.");
 
-            var userId = await _context.Users
-                .Where(u => u.UserName == User.Identity!.Name)
-                .Select(u => u.Id)
-                .FirstOrDefaultAsync();
-
-            var classes = await GetClassEventsAsync(fromDate, toDate, userId);
+            var userId = await _currentUserService.GetUserIdAsync();
+            var classes = await _classService.GetClassEventsAsync(fromDate, toDate, userId);
             return Json(classes);
         }
 
@@ -60,36 +50,17 @@ namespace JiujitsuGymApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckIn(int id)
         {
-            var userId = await _context.Users
-                .Where(u => u.UserName == User.Identity!.Name)
-                .Select(u => u.Id)
-                .FirstOrDefaultAsync();
+            var userId = await _currentUserService.GetUserIdAsync();
+            if (userId is null) return Unauthorized();
 
-            if (userId is null)
-                return Unauthorized();
+            var result = await _classService.CheckInAsync(id, userId);
 
-            var classExists = await _context.Classes
-                .AnyAsync(c => c.Id == id && c.DeletedAt == null);
-
-            if (!classExists)
-                return NotFound();
-
-            var alreadyCheckedIn = await _context.Attendances
-                .AnyAsync(a => a.ClassId == id && a.UserId == userId);
-
-            if (alreadyCheckedIn)
-                return Conflict(new { error = "Already checked in to this class." });
-
-            _context.Attendances.Add(new Attendance
+            return result switch
             {
-                ClassId = id,
-                UserId = userId,
-                CheckedInAt = DateTime.UtcNow
-            });
-
-            await _context.SaveChangesAsync();
-
-            return Ok();
+                CheckInResult.NotFound => NotFound(),
+                CheckInResult.AlreadyCheckedIn => Conflict(new { error = "Already checked in to this class." }),
+                _ => Ok()
+            };
         }
 
         // DELETE: Classes/UndoCheckIn/5
@@ -97,44 +68,16 @@ namespace JiujitsuGymApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UndoCheckIn(int id)
         {
-            var userId = await _context.Users
-                .Where(u => u.UserName == User.Identity!.Name)
-                .Select(u => u.Id)
-                .FirstOrDefaultAsync();
+            var userId = await _currentUserService.GetUserIdAsync();
+            if (userId is null) return Unauthorized();
 
-            if (userId is null)
-                return Unauthorized();
+            var result = await _classService.UndoCheckInAsync(id, userId);
 
-            var attendance = await _context.Attendances
-                .FirstOrDefaultAsync(a => a.ClassId == id && a.UserId == userId);
-
-            if (attendance is null)
-                return NotFound();
-
-            _context.Attendances.Remove(attendance);
-            await _context.SaveChangesAsync();
-
-            return Ok();
-        }
-
-        private async Task<List<ClassEventDto>> GetClassEventsAsync(DateTime from, DateTime to, string? userId)
-        {
-            return await _context.Classes
-                .AsNoTracking()
-                .Include(c => c.Teacher)
-                .Include(c => c.Attendances)
-                .Where(c => c.DeletedAt == null && c.DateTime >= from && c.DateTime < to)
-                .OrderBy(c => c.DateTime)
-                .Select(c => new ClassEventDto
-                {
-                    Id = c.Id,
-                    Location = c.Location,
-                    TeacherName = c.Teacher.FirstName + " " + c.Teacher.LastName,
-                    DateTime = c.DateTime.ToString("o"),
-                    AttendanceCount = c.Attendances.Count,
-                    CheckedIn = userId != null && c.Attendances.Any(a => a.UserId == userId)
-                })
-                .ToListAsync();
+            return result switch
+            {
+                CheckInResult.NotFound => NotFound(),
+                _ => Ok()
+            };
         }
     }
 }

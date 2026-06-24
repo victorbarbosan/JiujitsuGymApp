@@ -27,6 +27,11 @@ namespace JiujitsuGymApp.Services
                 .ToListAsync();
         }
 
+        public async Task<int> GetTotalAttendedAsync(string userId)
+        {
+            return await db.Attendances.CountAsync(a => a.UserId == userId);
+        }
+
         public async Task<CheckInResult> CheckInAsync(int classId, string userId)
         {
             var classExists = await db.Classes.AnyAsync(c => c.Id == classId && c.DeletedAt == null);
