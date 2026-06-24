@@ -35,6 +35,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
 builder.Services.AddScoped<ScheduleService>();
+builder.Services.AddScoped<ClassService>();
 
 // Configure application cookies
 builder.Services.ConfigureApplicationCookie(options =>
