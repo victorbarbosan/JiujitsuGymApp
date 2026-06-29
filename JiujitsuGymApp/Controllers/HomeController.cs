@@ -1,10 +1,8 @@
 using System.Diagnostics;
-using JiujitsuGymApp.Data;
-using JiujitsuGymApp.Dtos;
 using JiujitsuGymApp.Models;
+using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace JiujitsuGymApp.Controllers
 {
@@ -12,16 +10,16 @@ namespace JiujitsuGymApp.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<User> _userManager;
-        private readonly ApplicationDbContext _context;
+        private readonly ClassService _classService;
 
         public HomeController(
             ILogger<HomeController> logger,
             UserManager<User> userManager,
-            ApplicationDbContext context)
+            ClassService classService)
         {
             _logger = logger;
             _userManager = userManager;
-            _context = context;
+            _classService = classService;
         }
 
         public async Task<IActionResult> Index()
@@ -36,25 +34,8 @@ namespace JiujitsuGymApp.Controllers
             var todayUtc = DateTime.UtcNow.Date;
             var tomorrowUtc = todayUtc.AddDays(1);
 
-            var todayClasses = await _context.Classes
-                .AsNoTracking()
-                .Include(c => c.Teacher)
-                .Include(c => c.Attendances)
-                .Where(c => c.DeletedAt == null && c.DateTime >= todayUtc && c.DateTime < tomorrowUtc)
-                .OrderBy(c => c.DateTime)
-                .Select(c => new ClassEventDto
-                {
-                    Id = c.Id,
-                    Location = c.Location,
-                    TeacherName = c.Teacher.FirstName + " " + c.Teacher.LastName,
-                    DateTime = c.DateTime.ToString("o"),
-                    AttendanceCount = c.Attendances.Count,
-                    CheckedIn = c.Attendances.Any(a => a.UserId == user.Id)
-                })
-                .ToListAsync();
-
-            var totalAttended = await _context.Attendances
-                .CountAsync(a => a.UserId == user.Id);
+            var todayClasses = await _classService.GetClassEventsAsync(todayUtc, tomorrowUtc, user.Id);
+            var totalAttended = await _classService.GetTotalAttendedAsync(user.Id);
 
             var model = new HomeViewModel
             {
