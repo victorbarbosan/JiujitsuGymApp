@@ -33,9 +33,11 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
 builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddScoped<ClassService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // Configure application cookies
 builder.Services.ConfigureApplicationCookie(options =>
