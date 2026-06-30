@@ -1,8 +1,7 @@
-﻿using JiujitsuGymApp.Data;
-using JiujitsuGymApp.Models;
+﻿using JiujitsuGymApp.Models;
+using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace JiujitsuGymApp.Controllers
 {
@@ -10,16 +9,16 @@ namespace JiujitsuGymApp.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly ILogger<ProfileController> _logger;
-        private readonly ApplicationDbContext _context;
+        private readonly ClassService _classService;
 
         public ProfileController(
             UserManager<User> userManager,
             ILogger<ProfileController> logger,
-            ApplicationDbContext context)
+            ClassService classService)
         {
             _userManager = userManager;
             _logger = logger;
-            _context = context;
+            _classService = classService;
         }
 
         // GET: Profile
@@ -31,8 +30,7 @@ namespace JiujitsuGymApp.Controllers
             if (user == null)
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
 
-            var totalClassesAttended = await _context.Attendances
-                .CountAsync(a => a.UserId == user.Id);
+            var totalClassesAttended = await _classService.GetTotalAttendedAsync(user.Id);
 
             var model = new ProfileViewModel
             {
