@@ -38,6 +38,7 @@ builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipa
 builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddScoped<ClassService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<UserService>();
 
 // Configure application cookies
 builder.Services.ConfigureApplicationCookie(options =>

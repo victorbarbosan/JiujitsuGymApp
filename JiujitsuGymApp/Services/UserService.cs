@@ -75,6 +75,31 @@ namespace JiujitsuGymApp.Services
             return (ToDto(user, dto.Role), []);
         }
 
+        public async Task<IEnumerable<string>> UpdateProfileAsync(string id, UpdateProfileDto dto)
+        {
+            var user = await userManager.FindByIdAsync(id);
+            if (user is null) return ["User not found."];
+
+            if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                var emailResult = await userManager.SetEmailAsync(user, dto.Email);
+                if (!emailResult.Succeeded)
+                    return emailResult.Errors.Select(e => e.Description);
+
+                await userManager.SetUserNameAsync(user, dto.Email);
+            }
+
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            user.PhoneNumber = dto.PhoneNumber;
+
+            if (dto.Belt.HasValue && Enum.IsDefined(typeof(BeltColor), dto.Belt.Value))
+                user.Belt = dto.Belt.Value;
+
+            var updateResult = await userManager.UpdateAsync(user);
+            return updateResult.Succeeded ? [] : updateResult.Errors.Select(e => e.Description);
+        }
+
         public async Task<UserDto?> GetUserByIdAsync(string id)
         {
             var user = await userManager.FindByIdAsync(id);
