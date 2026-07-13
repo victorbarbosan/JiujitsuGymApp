@@ -1,4 +1,5 @@
-﻿using JiujitsuGymApp.Models;
+using JiujitsuGymApp.Dtos;
+using JiujitsuGymApp.Models;
 using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,15 +11,18 @@ namespace JiujitsuGymApp.Controllers
         private readonly UserManager<User> _userManager;
         private readonly ILogger<ProfileController> _logger;
         private readonly ClassService _classService;
+        private readonly UserService _userService;
 
         public ProfileController(
             UserManager<User> userManager,
             ILogger<ProfileController> logger,
-            ClassService classService)
+            ClassService classService,
+            UserService userService)
         {
             _userManager = userManager;
             _logger = logger;
             _classService = classService;
+            _userService = userService;
         }
 
         // GET: Profile
@@ -30,19 +34,8 @@ namespace JiujitsuGymApp.Controllers
             if (user == null)
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
 
-            var totalClassesAttended = await _classService.GetTotalAttendedAsync(user.Id);
-
-            var model = new ProfileViewModel
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email!,
-                PhoneNumber = user.PhoneNumber,
-                Belt = user.Belt,
-                CreatedAt = user.CreatedAt,
-                LastLoginAt = user.LastLoginAt,
-                TotalClassesAttended = totalClassesAttended,
-            };
+            var model = ToProfileViewModel(user);
+            model.TotalClassesAttended = await _classService.GetTotalAttendedAsync(user.Id);
 
             return View(model);
         }
@@ -54,18 +47,7 @@ namespace JiujitsuGymApp.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
 
-            var model = new ProfileViewModel
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email!,
-                PhoneNumber = user.PhoneNumber,
-                Belt = user.Belt,
-                CreatedAt = user.CreatedAt,
-                LastLoginAt = user.LastLoginAt,
-            };
-
-            return View(model);
+            return View(ToProfileViewModel(user));
         }
 
         // POST : Profile/Edit
@@ -75,50 +57,34 @@ namespace JiujitsuGymApp.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return NotFound("Unable to load the current user.");
 
-            if (!string.Equals(model.Email, user.Email, StringComparison.OrdinalIgnoreCase))
+            var dto = new UpdateProfileDto
             {
-                var setEmailResult = await _userManager.SetEmailAsync(user, model.Email);
-                if (!setEmailResult.Succeeded)
-                {
-                    foreach (var error in setEmailResult.Errors)
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    return View(model);
-                }
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                Belt = model.Belt
+            };
 
-                var setUserNameResult = await _userManager.SetUserNameAsync(user, model.Email);
-                if (!setUserNameResult.Succeeded)
-                {
-                    foreach (var error in setUserNameResult.Errors)
-                        ModelState.AddModelError(string.Empty, error.Description);
-                    return View(model);
-                }
-            }
-
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName;
-            user.PhoneNumber = model.PhoneNumber;
-
-            if (model.Belt.HasValue && Enum.IsDefined(typeof(BeltColor), model.Belt.Value))
-                user.Belt = model.Belt.Value;
-
-            var updateResult = await _userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
+            var errors = await _userService.UpdateProfileAsync(userId, dto);
+            if (errors.Any())
             {
-                foreach (var error in updateResult.Errors)
-                    ModelState.AddModelError(string.Empty, error.Description);
+                foreach (var error in errors)
+                    ModelState.AddModelError(string.Empty, error);
                 return View(model);
             }
 
+            _logger.LogInformation("User updated profile: {Email}", dto.Email);
             TempData["SuccessMessage"] = "Profile updated successfully.";
             return RedirectToAction(nameof(Index));
         }
 
         // GET : Profile/ChangePassword
         [HttpGet]
-        public async Task<IActionResult> ChangePassword()
+        public IActionResult ChangePassword()
         {
             return View();
         }
@@ -131,23 +97,30 @@ namespace JiujitsuGymApp.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return NotFound("Unable to load the current user.");
 
-            var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-            if (!changePasswordResult.Succeeded)
+            var errors = await _userService.ChangePasswordAsync(userId, model.OldPassword, model.NewPassword);
+            if (errors.Any())
             {
-                foreach (var error in changePasswordResult.Errors)
-                    ModelState.AddModelError(string.Empty, error.Description);
+                foreach (var error in errors)
+                    ModelState.AddModelError(string.Empty, error);
                 return View(model);
             }
-
-            user.LastLoginAt = DateTime.Now;
-            await _userManager.UpdateAsync(user);
 
             TempData["SuccessMessage"] = "Your password has been changed!";
             return RedirectToAction(nameof(Index));
         }
+
+        private static ProfileViewModel ToProfileViewModel(User user) => new()
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email!,
+            PhoneNumber = user.PhoneNumber,
+            Belt = user.Belt,
+            CreatedAt = user.CreatedAt,
+            LastLoginAt = user.LastLoginAt,
+        };
     }
 }

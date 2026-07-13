@@ -100,6 +100,20 @@ namespace JiujitsuGymApp.Services
             return updateResult.Succeeded ? [] : updateResult.Errors.Select(e => e.Description);
         }
 
+        public async Task<IEnumerable<string>> ChangePasswordAsync(string id, string oldPassword, string newPassword)
+        {
+            var user = await userManager.FindByIdAsync(id);
+            if (user is null) return ["User not found."];
+
+            var result = await userManager.ChangePasswordAsync(user, oldPassword, newPassword);
+            if (!result.Succeeded)
+                return result.Errors.Select(e => e.Description);
+
+            user.LastLoginAt = DateTime.UtcNow;
+            await userManager.UpdateAsync(user);
+            return [];
+        }
+
         public async Task<UserDto?> GetUserByIdAsync(string id)
         {
             var user = await userManager.FindByIdAsync(id);
