@@ -12,7 +12,6 @@ namespace JiujitsuGymApp.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private readonly int _pageSize;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<AdminController> _logger;
         private readonly ApplicationDbContext _context;
@@ -21,13 +20,11 @@ namespace JiujitsuGymApp.Controllers
         public AdminController(
             UserManager<User> userManager,
             ILogger<AdminController> logger,
-            IConfiguration config,
             ApplicationDbContext context,
             UserService userService)
         {
             _userManager = userManager;
             _logger = logger;
-            _pageSize = config.GetValue<int>("Pagination:DefaultPageSize", 50);
             _context = context;
             _userService = userService;
         }
@@ -36,11 +33,7 @@ namespace JiujitsuGymApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var initialUsers = await _userManager.Users
-                .AsNoTracking()
-                .OrderBy(u => u.FirstName)
-                .Take(_pageSize)
-                .ToListAsync();
+            var initialUsers = await _userService.GetUsersAsync();
 
             var initialSchedules = await _context.ClassSchedules
                 .AsNoTracking()
@@ -50,7 +43,7 @@ namespace JiujitsuGymApp.Controllers
 
             ViewBag.InitialSchedules = initialSchedules.Select(ToScheduleDto).ToList();
 
-            return View(initialUsers.Select(u => UserService.ToDto(u)).ToList());
+            return View(initialUsers);
         }
 
         // GET : Admin/GetSchedules
@@ -123,44 +116,14 @@ namespace JiujitsuGymApp.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTeachers()
         {
-            var teachers = await _userManager.GetUsersInRoleAsync("Teacher");
-            var admins = await _userManager.GetUsersInRoleAsync("Admin");
-
-            var eligible = teachers.Concat(admins)
-                .GroupBy(u => u.Id)
-                .Select(g => g.First())
-                .OrderBy(u => u.FirstName)
-                .Select(u => new { id = u.Id, name = $"{u.FirstName} {u.LastName}" })
-                .ToList();
-
-            return Json(eligible);
+            return Json(await _userService.GetEligibleTeachersAsync());
         }
 
         // GET : Admin/GetUsers
         [HttpGet]
         public async Task<IActionResult> GetUsers(int skip = 0, string? query = null, string? sortBy = "firstName", string? sortDir = "asc")
         {
-            var users = _userManager.Users.AsNoTracking();
-
-            if (!string.IsNullOrWhiteSpace(query))
-            {
-                var q = query.Trim().ToLower();
-                users = users.Where(u =>
-                    (u.FirstName + " " + u.LastName).ToLower().Contains(q) ||
-                    u.Email!.ToLower().Contains(q));
-            }
-
-            var dir = sortDir?.ToLower() ?? "asc";
-
-            users = dir switch
-            {
-                "asc" => users.OrderBy(u => u.FirstName),
-                "desc" => users.OrderByDescending(u => u.FirstName),
-                _ => users.OrderBy(u => u.FirstName)
-            };
-
-            var userList = await users.Skip(skip).Take(_pageSize).ToListAsync();
-            return Json(userList.Select(u => UserService.ToDto(u)).ToList());
+            return Json(await _userService.GetUsersAsync(skip, query, sortDir));
         }
 
         // POST : Admin/CreateUser

@@ -1,12 +1,48 @@
 using JiujitsuGymApp.Dtos;
 using JiujitsuGymApp.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace JiujitsuGymApp.Services
 {
-    public class UserService(UserManager<User> userManager)
+    public class UserService(UserManager<User> userManager, IConfiguration config)
     {
         private static readonly HashSet<string> AllowedRoles = ["Admin", "Member", "Teacher"];
+
+        private readonly int _pageSize = config.GetValue<int>("Pagination:DefaultPageSize", 50);
+
+        public async Task<List<UserDto>> GetUsersAsync(int skip = 0, string? query = null, string? sortDir = "asc")
+        {
+            var users = userManager.Users.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var q = query.Trim().ToLower();
+                users = users.Where(u =>
+                    (u.FirstName + " " + u.LastName).ToLower().Contains(q) ||
+                    u.Email!.ToLower().Contains(q));
+            }
+
+            users = sortDir?.ToLower() == "desc"
+                ? users.OrderByDescending(u => u.FirstName)
+                : users.OrderBy(u => u.FirstName);
+
+            var userList = await users.Skip(skip).Take(_pageSize).ToListAsync();
+            return userList.Select(u => ToDto(u)).ToList();
+        }
+
+        public async Task<List<TeacherOptionDto>> GetEligibleTeachersAsync()
+        {
+            var teachers = await userManager.GetUsersInRoleAsync("Teacher");
+            var admins = await userManager.GetUsersInRoleAsync("Admin");
+
+            return teachers.Concat(admins)
+                .GroupBy(u => u.Id)
+                .Select(g => g.First())
+                .OrderBy(u => u.FirstName)
+                .Select(u => new TeacherOptionDto { Id = u.Id, Name = $"{u.FirstName} {u.LastName}" })
+                .ToList();
+        }
 
         public async Task<(UserDto? user, IEnumerable<string> errors)> CreateUserAsync(CreateUserDto dto)
         {
