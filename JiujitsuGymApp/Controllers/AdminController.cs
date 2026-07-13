@@ -1,6 +1,7 @@
 ﻿using JiujitsuGymApp.Data;
 using JiujitsuGymApp.Dtos;
 using JiujitsuGymApp.Models;
+using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,24 +14,22 @@ namespace JiujitsuGymApp.Controllers
     {
         private readonly int _pageSize;
         private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<AdminController> _logger;
         private readonly ApplicationDbContext _context;
-
-        private static readonly HashSet<string> _allowedRoles = ["Admin", "Member", "Teacher"];
+        private readonly UserService _userService;
 
         public AdminController(
             UserManager<User> userManager,
-            RoleManager<IdentityRole> roleManager,
             ILogger<AdminController> logger,
             IConfiguration config,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            UserService userService)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
             _logger = logger;
             _pageSize = config.GetValue<int>("Pagination:DefaultPageSize", 50);
             _context = context;
+            _userService = userService;
         }
 
         // GET : Admin/
@@ -51,7 +50,7 @@ namespace JiujitsuGymApp.Controllers
 
             ViewBag.InitialSchedules = initialSchedules.Select(ToScheduleDto).ToList();
 
-            return View(initialUsers.Select(u => ToDto(u)).ToList());
+            return View(initialUsers.Select(u => UserService.ToDto(u)).ToList());
         }
 
         // GET : Admin/GetSchedules
@@ -128,8 +127,8 @@ namespace JiujitsuGymApp.Controllers
             var admins = await _userManager.GetUsersInRoleAsync("Admin");
 
             var eligible = teachers.Concat(admins)
-                .GroupBy(u => u.Id) // If a user is in both roles, this groups them together
-                .Select(g => g.First()) // Take one instance of the user
+                .GroupBy(u => u.Id)
+                .Select(g => g.First())
                 .OrderBy(u => u.FirstName)
                 .Select(u => new { id = u.Id, name = $"{u.FirstName} {u.LastName}" })
                 .ToList();
@@ -161,7 +160,7 @@ namespace JiujitsuGymApp.Controllers
             };
 
             var userList = await users.Skip(skip).Take(_pageSize).ToListAsync();
-            return Json(userList.Select(u => ToDto(u)).ToList());
+            return Json(userList.Select(u => UserService.ToDto(u)).ToList());
         }
 
         // POST : Admin/CreateUser
@@ -175,44 +174,22 @@ namespace JiujitsuGymApp.Controllers
                 return BadRequest(new { errors });
             }
 
-            if (!_allowedRoles.Contains(dto.Role))
-                return BadRequest(new { errors = new[] { $"Invalid role '{dto.Role}'." } });
+            var (userDto, serviceErrors) = await _userService.CreateUserAsync(dto);
 
-            if (await _userManager.FindByEmailAsync(dto.Email) is not null)
-                return BadRequest(new { errors = new[] { "A user with this email already exists." } });
+            if (serviceErrors.Any())
+                return BadRequest(new { errors = serviceErrors });
 
-            var beltColor = Enum.TryParse<BeltColor>(dto.Belt, out var parsed) ? parsed : BeltColor.White;
-
-            var user = new User
-            {
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                UserName = dto.Email,
-                Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
-                Belt = beltColor,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            var result = await _userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded)
-                return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
-
-            await _userManager.AddToRoleAsync(user, dto.Role);
             _logger.LogInformation("Admin created new user: {Email} with role: {Role}", dto.Email, dto.Role);
-
-            return Ok(ToDto(user, dto.Role));
+            return Ok(userDto);
         }
 
         // GET : Admin/GetUser/abc123
         [HttpGet]
         public async Task<IActionResult> GetUser(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user is null) return NotFound();
-
-            var roles = await _userManager.GetRolesAsync(user);
-            return Json(ToDto(user, roles.FirstOrDefault() ?? "Member"));
+            var userDto = await _userService.GetUserByIdAsync(id);
+            if (userDto is null) return NotFound();
+            return Json(userDto);
         }
 
         // PUT : Admin/UpdateUser/abc123
@@ -226,43 +203,13 @@ namespace JiujitsuGymApp.Controllers
                 return BadRequest(new { errors });
             }
 
-            if (!_allowedRoles.Contains(dto.Role))
-                return BadRequest(new { errors = new[] { $"Invalid role '{dto.Role}'." } });
+            var (userDto, serviceErrors) = await _userService.UpdateUserAsync(id, dto);
 
-            var user = await _userManager.FindByIdAsync(id);
-            if (user is null) return NotFound();
+            if (serviceErrors.Any())
+                return BadRequest(new { errors = serviceErrors });
 
-            // Update email/username if changed
-            if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
-            {
-                var emailResult = await _userManager.SetEmailAsync(user, dto.Email);
-                if (!emailResult.Succeeded)
-                    return BadRequest(new { errors = emailResult.Errors.Select(e => e.Description) });
-
-                await _userManager.SetUserNameAsync(user, dto.Email);
-            }
-
-            user.FirstName = dto.FirstName;
-            user.LastName = dto.LastName;
-            user.PhoneNumber = dto.PhoneNumber;
-
-            if (Enum.TryParse<BeltColor>(dto.Belt, out var belt))
-                user.Belt = belt;
-
-            var updateResult = await _userManager.UpdateAsync(user);
-            if (!updateResult.Succeeded)
-                return BadRequest(new { errors = updateResult.Errors.Select(e => e.Description) });
-
-            // Sync role
-            var currentRoles = await _userManager.GetRolesAsync(user);
-            if (!currentRoles.Contains(dto.Role))
-            {
-                await _userManager.RemoveFromRolesAsync(user, currentRoles);
-                await _userManager.AddToRoleAsync(user, dto.Role);
-            }
-
-            _logger.LogInformation("Admin updated user: {Email}", user.Email);
-            return Ok(ToDto(user, dto.Role));
+            _logger.LogInformation("Admin updated user: {Email}", dto.Email);
+            return Ok(userDto);
         }
 
         private static ClassScheduleDto ToScheduleDto(ClassSchedule s) => new()
@@ -275,22 +222,5 @@ namespace JiujitsuGymApp.Controllers
             TimeOfDay = s.TimeOfDay.ToString(@"hh\:mm"),
             IsActive = s.IsActive
         };
-
-        private static UserDto ToDto(User u, string role = "Member") => new()
-        {
-            Id = u.Id,
-            FirstName = u.FirstName,
-            LastName = u.LastName,
-            Email = u.Email!,
-            PhoneNumber = u.PhoneNumber,
-            Belt = u.Belt.HasValue ? u.Belt.Value.ToString() : "Not Set",
-            Role = role
-        };
-
-        private sealed class UserIdComparer : IEqualityComparer<User>
-        {
-            public bool Equals(User? x, User? y) => x?.Id == y?.Id;
-            public int GetHashCode(User obj) => obj.Id.GetHashCode();
-        }
     }
 }
