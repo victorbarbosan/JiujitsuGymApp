@@ -95,7 +95,7 @@ class AdminScheduleManagement extends LitElement {
 
     _renderModalContent() {
         return html`
-        <form @submit=${this._handleSubmit}>
+        <form @submit=${(e) => this._handleSubmit(e)}>
             <div class="modal-body">
                 ${this.formErrors.length > 0 ? html`
                     <div class="alert alert-danger">
