@@ -39,6 +39,7 @@ builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddScoped<ClassService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AccountService>();
 
 // Configure application cookies
 builder.Services.ConfigureApplicationCookie(options =>

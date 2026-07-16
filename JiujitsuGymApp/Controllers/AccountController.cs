@@ -1,24 +1,22 @@
-﻿using JiujitsuGymApp.Models;
+using JiujitsuGymApp.Dtos;
+using JiujitsuGymApp.Models;
+using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JiujitsuGymApp.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
+        private readonly AccountService _accountService;
         private readonly ILogger<AccountController> _logger;
 
         public AccountController(
-            UserManager<User> userManager,
-            SignInManager<User> signInManager,
+            AccountService accountService,
             ILogger<AccountController> logger
             )
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _accountService = accountService;
             _logger = logger;
         }
 
@@ -40,36 +38,14 @@ namespace JiujitsuGymApp.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                // Find user by email
-                var user = await _userManager.FindByEmailAsync(model.Email);
+                var succeeded = await _accountService.LoginAsync(model.Email, model.Password, model.RememberMe);
 
-                if (user != null)
+                if (succeeded)
                 {
-                    // Attempt to sign in
-                    var result = await _signInManager.PasswordSignInAsync(
-                        user.UserName!,
-                        model.Password,
-                        model.RememberMe,
-                        lockoutOnFailure: false);
-
-                    if (result.Succeeded)
-                    {
-                        _logger.LogInformation($"User logged in: {model.Email}");
-
-                        // Update last login time
-                        user.LastLoginAt = DateTime.UtcNow;
-                        await _userManager.UpdateAsync(user);
-
-                        // Redirect to return URL or home page
-                        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                        {
-                            return Redirect(returnUrl);
-                        }
-                        return RedirectToAction("Index", "Home");
-                    }
+                    _logger.LogInformation("User logged in: {Email}", model.Email);
+                    return RedirectToLocal(returnUrl);
                 }
 
-                // If we get here, login failed
                 ModelState.AddModelError(string.Empty, "Invalid login attempt");
             }
             return View(model);
@@ -78,7 +54,7 @@ namespace JiujitsuGymApp.Controllers
         // GET : Account/Register
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Register(string? returnUrl = null)
+        public IActionResult Register(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             var model = new RegisterViewModel();
@@ -95,55 +71,28 @@ namespace JiujitsuGymApp.Controllers
 
             if (ModelState.IsValid)
             {
-                // Check if user already exists
-                var existingUser = await _userManager.FindByEmailAsync(model.Email);
-
-                if (existingUser != null)
-                {
-                    ModelState.AddModelError(string.Empty, "A user with this email address already exists.");
-                    return View(model);
-                }
-
-                // Create new user
-                var user = new User
+                var dto = new CreateUserDto
                 {
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    UserName = model.Email,
                     Email = model.Email,
-                    Belt = model.Belt,
                     PhoneNumber = model.PhoneNumber,
-                    CreatedAt = DateTime.UtcNow
+                    Belt = model.Belt?.ToString() ?? "White",
+                    Password = model.Password,
+                    Role = "Member"
                 };
 
-                var result = await _userManager.CreateAsync(user, model.Password);
+                var errors = await _accountService.RegisterAsync(dto);
 
-                if (result.Succeeded)
+                if (!errors.Any())
                 {
                     _logger.LogInformation("User created a new account: {Email}", model.Email);
-
-                    // Assign default role
-                    await _userManager.AddToRoleAsync(user, "Member");
-
-                    // Log in the user
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-
-                    // Update last login time
-                    user.LastLoginAt = DateTime.UtcNow;
-                    await _userManager.UpdateAsync(user);
-
-                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    {
-                        return Redirect(returnUrl);
-                    }
-
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToLocal(returnUrl);
                 }
 
-                // Handle creation errors
-                foreach (var error in result.Errors)
+                foreach (var error in errors)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    ModelState.AddModelError(string.Empty, error);
                 }
             }
             return View(model);
@@ -154,8 +103,8 @@ namespace JiujitsuGymApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
-            _logger.LogInformation($"User logged out: {User.Identity?.Name}");
+            await _accountService.LogoutAsync();
+            _logger.LogInformation("User logged out: {Name}", User.Identity?.Name);
             return RedirectToAction("Index", "Home");
         }
 
@@ -166,5 +115,13 @@ namespace JiujitsuGymApp.Controllers
             return View();
         }
 
+        private IActionResult RedirectToLocal(string? returnUrl)
+        {
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            return RedirectToAction("Index", "Home");
+        }
     }
 }
