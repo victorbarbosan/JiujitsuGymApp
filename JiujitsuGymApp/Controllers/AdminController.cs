@@ -1,32 +1,25 @@
-﻿using JiujitsuGymApp.Data;
 using JiujitsuGymApp.Dtos;
-using JiujitsuGymApp.Models;
 using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace JiujitsuGymApp.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private readonly UserManager<User> _userManager;
         private readonly ILogger<AdminController> _logger;
-        private readonly ApplicationDbContext _context;
         private readonly UserService _userService;
+        private readonly ScheduleService _scheduleService;
 
         public AdminController(
-            UserManager<User> userManager,
             ILogger<AdminController> logger,
-            ApplicationDbContext context,
-            UserService userService)
+            UserService userService,
+            ScheduleService scheduleService)
         {
-            _userManager = userManager;
             _logger = logger;
-            _context = context;
             _userService = userService;
+            _scheduleService = scheduleService;
         }
 
         // GET : Admin/
@@ -35,13 +28,7 @@ namespace JiujitsuGymApp.Controllers
         {
             var initialUsers = await _userService.GetUsersAsync();
 
-            var initialSchedules = await _context.ClassSchedules
-                .AsNoTracking()
-                .Include(s => s.Teacher)
-                .OrderBy(s => s.DayOfWeek).ThenBy(s => s.TimeOfDay)
-                .ToListAsync();
-
-            ViewBag.InitialSchedules = initialSchedules.Select(ToScheduleDto).ToList();
+            ViewBag.InitialSchedules = await _scheduleService.GetSchedulesAsync();
 
             return View(initialUsers);
         }
@@ -50,13 +37,7 @@ namespace JiujitsuGymApp.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSchedules()
         {
-            var schedules = await _context.ClassSchedules
-                .AsNoTracking()
-                .Include(s => s.Teacher)
-                .OrderBy(s => s.DayOfWeek).ThenBy(s => s.TimeOfDay)
-                .ToListAsync();
-
-            return Json(schedules.Select(ToScheduleDto));
+            return Json(await _scheduleService.GetSchedulesAsync());
         }
 
         // POST : Admin/CreateSchedule
@@ -70,32 +51,15 @@ namespace JiujitsuGymApp.Controllers
                 return BadRequest(new { errors });
             }
 
-            if (!Enum.TryParse<DayOfWeek>(dto.DayOfWeek, out var day))
-                return BadRequest(new { errors = new[] { "Invalid day of week." } });
+            var (scheduleDto, serviceErrors) = await _scheduleService.CreateScheduleAsync(dto);
 
-            if (!TimeSpan.TryParse(dto.TimeOfDay, out var time))
-                return BadRequest(new { errors = new[] { "Invalid time format. Use HH:mm." } });
+            if (serviceErrors.Any())
+                return BadRequest(new { errors = serviceErrors });
 
-            var teacher = await _userManager.FindByIdAsync(dto.TeacherId);
-            if (teacher is null)
-                return BadRequest(new { errors = new[] { "Teacher not found." } });
+            _logger.LogInformation("Schedule created: {Day} {Time} at {Location}",
+                scheduleDto!.DayOfWeek, scheduleDto.TimeOfDay, scheduleDto.Location);
 
-            var schedule = new ClassSchedule
-            {
-                TeacherId = dto.TeacherId,
-                Location = dto.Location,
-                DayOfWeek = day,
-                TimeOfDay = time,
-                IsActive = true
-            };
-
-            _context.ClassSchedules.Add(schedule);
-            await _context.SaveChangesAsync();
-
-            schedule.Teacher = teacher;
-            _logger.LogInformation("Schedule created: {Day} {Time} at {Location}", day, time, dto.Location);
-
-            return Ok(ToScheduleDto(schedule));
+            return Ok(scheduleDto);
         }
 
         // DELETE : Admin/DeleteSchedule/5
@@ -103,13 +67,8 @@ namespace JiujitsuGymApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteSchedule(int id)
         {
-            var schedule = await _context.ClassSchedules.FindAsync(id);
-            if (schedule is null) return NotFound();
-
-            schedule.IsActive = false;
-            await _context.SaveChangesAsync();
-
-            return Ok();
+            var found = await _scheduleService.DeactivateScheduleAsync(id);
+            return found ? Ok() : NotFound();
         }
 
         // GET : Admin/GetTeachers
@@ -174,16 +133,5 @@ namespace JiujitsuGymApp.Controllers
             _logger.LogInformation("Admin updated user: {Email}", dto.Email);
             return Ok(userDto);
         }
-
-        private static ClassScheduleDto ToScheduleDto(ClassSchedule s) => new()
-        {
-            Id = s.Id,
-            TeacherId = s.TeacherId,
-            TeacherName = s.Teacher?.Name ?? string.Empty,
-            Location = s.Location,
-            DayOfWeek = s.DayOfWeek.ToString(),
-            TimeOfDay = s.TimeOfDay.ToString(@"hh\:mm"),
-            IsActive = s.IsActive
-        };
     }
 }
