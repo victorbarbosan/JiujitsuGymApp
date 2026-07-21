@@ -1,23 +1,22 @@
-﻿using JiujitsuGymApp.Data;
-using JiujitsuGymApp.Models;
+using JiujitsuGymApp.Dtos;
+using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace JiujitsuGymApp.Controllers
 {
 	public class ProductsController : Controller
 	{
-		private readonly ApplicationDbContext _context;
+		private readonly ProductService _productService;
 
-		public ProductsController(ApplicationDbContext context)
+		public ProductsController(ProductService productService)
 		{
-			_context = context;
+			_productService = productService;
 		}
 
 		// GET : Products
 		public async Task<IActionResult> Index()
 		{
-			var products = await _context.Products.OrderBy(p => p.Name).ToListAsync();
+			var products = await _productService.GetProductsAsync();
 			return View(products);
 		}
 
@@ -29,7 +28,7 @@ namespace JiujitsuGymApp.Controllers
 				return NotFound();
 			}
 
-			var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+			var product = await _productService.GetProductByIdAsync(id.Value);
 
 			if (product == null)
 			{
@@ -40,7 +39,7 @@ namespace JiujitsuGymApp.Controllers
 		}
 
 		// GET : Products/Create
-		public async Task<IActionResult> Create()
+		public IActionResult Create()
 		{
 			return View();
 		}
@@ -48,16 +47,14 @@ namespace JiujitsuGymApp.Controllers
 		// POST : Products
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(Product product)
+		public async Task<IActionResult> Create(CreateProductDto dto)
 		{
 			if (ModelState.IsValid)
 			{
-				product.CreatedDate = DateTime.Now;
-				_context.Add(product);
-				await _context.SaveChangesAsync();
+				await _productService.CreateProductAsync(dto);
 				return RedirectToAction(nameof(Index));
 			}
-			return View(product);
+			return View(dto);
 		}
 
 		// GET : Products/Edit/5
@@ -68,7 +65,7 @@ namespace JiujitsuGymApp.Controllers
 				return NotFound();
 			}
 
-			var product = await _context.Products.FindAsync(id);
+			var product = await _productService.GetProductByIdAsync(id.Value);
 			if (product == null)
 			{
 				return NotFound();
@@ -80,39 +77,18 @@ namespace JiujitsuGymApp.Controllers
 		// POST : Products/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(int id, Product product)
+		public async Task<IActionResult> Edit(int id, UpdateProductDto dto)
 		{
-			if (id != product.Id)
-			{
-				return NotFound();
-			}
-
 			if (ModelState.IsValid)
 			{
-				try
+				var updated = await _productService.UpdateProductAsync(id, dto);
+				if (!updated)
 				{
-					_context.Update(product);
-					await _context.SaveChangesAsync();
-				}
-				catch (DbUpdateConcurrencyException)
-				{
-					if (!ProductExists(product.Id))
-					{
-						return NotFound();
-					}
-					else
-					{
-						throw;
-					}
+					return NotFound();
 				}
 				return RedirectToAction(nameof(Index));
 			}
-			return View(product);
-		}
-
-		private bool ProductExists(int id)
-		{
-			return _context.Products.Any(p => p.Id == id);
+			return View(dto);
 		}
 	}
 }
