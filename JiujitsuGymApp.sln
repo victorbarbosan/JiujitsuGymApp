@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JiujitsuGymApp", "JiujitsuGymApp.csproj", "{23131B5E-B43D-474F-82BB-45DB9ACEAFB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JiujitsuGymApp", "JiujitsuGymApp\JiujitsuGymApp.csproj", "{23131B5E-B43D-474F-82BB-45DB9ACEAFB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JiujitsuGymApp.Tests", "..\JiujitsuGymApp.Tests\JiujitsuGymApp.Tests.csproj", "{151627C7-BEB6-410C-9E7F-2A4A99BBF23B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JiujitsuGymApp.Tests", "JiujitsuGymApp.Tests\JiujitsuGymApp.Tests.csproj", "{151627C7-BEB6-410C-9E7F-2A4A99BBF23B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JiujitsuGymApp.E2E", "..\JiujitsuGymApp.E2E\JiujitsuGymApp.E2E.csproj", "{C51308A0-8799-99A9-0D18-8EBA9D38B7D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JiujitsuGymApp.E2E", "JiujitsuGymApp.E2E\JiujitsuGymApp.E2E.csproj", "{C51308A0-8799-99A9-0D18-8EBA9D38B7D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
