@@ -22,7 +22,7 @@ namespace JiujitsuGymApp.Services
 
         public async Task<(ClassScheduleDto? schedule, IEnumerable<string> errors)> CreateScheduleAsync(CreateClassScheduleDto dto)
         {
-            if (!Enum.TryParse<DayOfWeek>(dto.DayOfWeek, out var day))
+            if (!Enum.TryParse<DayOfWeek>(dto.DayOfWeek, out var day) || !Enum.IsDefined(day))
                 return (null, ["Invalid day of week."]);
 
             if (!TimeSpan.TryParse(dto.TimeOfDay, out var time))

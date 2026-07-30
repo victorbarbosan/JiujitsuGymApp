@@ -47,6 +47,7 @@ public sealed class ScheduleServiceTests : IDisposable
     [Theory]
     [InlineData("Funday")]
     [InlineData("")]
+    [InlineData("99")] // Enum.TryParse accepts any numeric string, even outside the enum's range
     public async Task CreateScheduleAsync_WithInvalidDayOfWeek_ReturnsErrorAndSavesNothing(string invalidDay)
     {
         using var context = _db.CreateContext();
