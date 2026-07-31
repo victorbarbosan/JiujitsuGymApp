@@ -3,6 +3,8 @@
 ## Purpose
 This file documents repository-level conventions and guidelines contributors must follow. It ensures consistent code style, tooling and file organization across the project.
 
+Unless stated otherwise, paths below are relative to the `JiujitsuGymApp/` project folder — so `Services/` means `JiujitsuGymApp/Services/`.
+
 ## Development Setup
 1. **Server:** requires the .NET SDK. From the repository root:
    - `dotnet build` — build the app
@@ -15,10 +17,49 @@ This file documents repository-level conventions and guidelines contributors mus
 
 ## Branching & Commits
 - Do not commit directly to `master` for non-trivial changes; use a feature branch and open a pull request.
-- Commit messages follow the [Conventional Commits](https://www.conventionalcommits.org/) style used in this repo:
-  - Format: `<type>(<scope>): <summary>` — e.g. `feat(user): Add UserService for user CRUD operations`, `refactor(admin): Use UserService in AdminController`.
-  - Common types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`.
 - Keep commits focused: one logical change per commit.
+- Every commit message follows the [Conventional Commits](https://www.conventionalcommits.org/) style used in this repo. The type and scope prefix is required — no bare summaries.
+
+### Format
+```
+<type>(<scope>): <Summary>
+
+Body explaining why the change was made.
+```
+
+### Type
+Required. One of:
+- `feat` — a new capability visible to users or callers
+- `fix` — a bug fix
+- `refactor` — restructuring that does not change behaviour
+- `test` — adding or changing tests only
+- `chore` — dependencies, tooling, build and repo housekeeping
+- `docs` — documentation only
+- `perf` — a change made specifically for performance
+
+### Scope
+Required, in parentheses, lowercase. Names the area touched — e.g. `db`, `deploy`, `deps`, `tools`, `infra`, `schedules`, `classes`, `products`, `user`, `admin`, `auth`, `client`, `e2e`. Reuse an existing scope where one fits rather than inventing a near-duplicate.
+
+### Summary
+Required. Imperative mood ("Add", "Reject", "Move" — not "Added" or "Adds"), capitalised, no trailing period. Keep the whole first line at 72 characters or fewer.
+
+### Body
+Required for anything whose reasoning is not obvious from the summary alone. Explain **why** the change was made and what it implies — the diff already shows what changed. Call out consequences a reviewer would want flagged, such as data that is not carried over or behaviour that changes for existing users. Wrap at 72 characters, separated from the summary by a blank line. Purely mechanical commits (a version bump, a file move) may omit it.
+
+### Examples
+```
+fix(schedules): Reject out-of-range numeric day-of-week values
+
+Enum.TryParse accepts any numeric string, so 99 parsed to the
+undefined value (DayOfWeek)99 and slipped past schedule validation.
+Guard with Enum.IsDefined as well, and add the failing case to the
+invalid-day theory to prove the fix and prevent regression.
+```
+```
+refactor(solution): Move solution file to repository root
+```
+
+Commits made before this convention was adopted do not follow it; leave them as they are.
 
 ## Server-Side Conventions (C#)
 - **Thin controllers:** business logic (validation, entity creation/updates, role management) belongs in service classes under `Services/`, not in controllers. Controllers orchestrate: bind input, call a service, translate the result into an HTTP response.
