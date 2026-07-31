@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/wwwroot/dist/
+.git/
+.gitignore
+.vs/
+.vscode/
+**/*.user
+docker-compose.yml
+Dockerfile
+JiujitsuGymApp.Tests/
+JiujitsuGymApp.E2E/
