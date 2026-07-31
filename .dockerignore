@@ -9,5 +9,6 @@
 **/*.user
 docker-compose.yml
 Dockerfile
+.env
 JiujitsuGymApp.Tests/
 JiujitsuGymApp.E2E/
