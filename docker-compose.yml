@@ -27,8 +27,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=jiujitsugym;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres}"
+    volumes:
+      # Persist Data Protection keys so auth cookies and antiforgery tokens
+      # survive a redeploy. Without this the container generates a new key
+      # ring on every recreate and logs everyone out.
+      - dpkeys:/root/.aspnet/DataProtection-Keys
     ports:
       - "8080:8080"
 
 volumes:
   pgdata:
+  dpkeys:
