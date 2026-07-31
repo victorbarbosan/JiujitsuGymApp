@@ -92,9 +92,12 @@ desktop.ini
 *.tlog
 
 # Publish output
-wwwroot/lib/
 wwwroot/dist/
 publish/
+
+# Vendor libraries under wwwroot/lib are committed (the app serves them
+# directly); negation must come after the global dist/ rule to win.
+!**/wwwroot/lib/**
 
 #playwright
 test-results/
