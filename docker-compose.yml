@@ -13,10 +13,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    ports:
-      # Exposed so the app can be run from Visual Studio / `dotnet run`
-      # against this database during development. Safe to remove on the Pi.
-      - "5432:5432"
 
   app:
     build: .
@@ -32,8 +28,6 @@ services:
       # survive a redeploy. Without this the container generates a new key
       # ring on every recreate and logs everyone out.
       - dpkeys:/root/.aspnet/DataProtection-Keys
-    ports:
-      - "8080:8080"
 
 volumes:
   pgdata:

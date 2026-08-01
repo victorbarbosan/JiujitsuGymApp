@@ -1,0 +1,13 @@
+# Development-only port bindings. docker compose loads this file
+# automatically next to docker-compose.yml; the Pi opts out because its
+# COMPOSE_FILE explicitly selects the base + prod files, so in production
+# nothing is published on the host - nginx reaches the app over the shared
+# `web` docker network instead.
+services:
+  db:
+    ports:
+      # Lets Visual Studio / `dotnet run` reach the containerised database
+      - "5432:5432"
+  app:
+    ports:
+      - "8080:8080"
