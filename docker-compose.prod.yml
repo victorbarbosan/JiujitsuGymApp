@@ -9,6 +9,13 @@
 # default network too, so it still reaches the `db` service.
 services:
   app:
+    # On the Pi the image comes from Docker Hub (published by the CI
+    # workflow) instead of being built locally from the checkout.
+    image: victorbarbosa9/jiujitsugymapp:latest
+    labels:
+      # Opt in to the Pi's central Watchtower (defined in the infra repo).
+      # It runs with label-enable, so only labelled containers are updated.
+      - com.centurylinklabs.watchtower.enable=true
     networks:
       default: {}
       web:
