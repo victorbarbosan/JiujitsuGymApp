@@ -1,0 +1,20 @@
+# Overrides applied only on the Raspberry Pi, selected via a COMPOSE_FILE
+# entry in the Pi's .env (docker-compose.yml:docker-compose.prod.yml).
+# It is not loaded during local development, so the Windows/Visual Studio
+# workflow keeps the host port bindings from the base file untouched.
+#
+# Purpose: join the app to the pre-existing `web` bridge network that the
+# nginx-proxy container lives on, so nginx can reach it as `jiujitsu-app`
+# and serve it at https://gym.victor-barbosa.com. The app stays on its
+# default network too, so it still reaches the `db` service.
+services:
+  app:
+    networks:
+      default: {}
+      web:
+        aliases:
+          - jiujitsu-app
+
+networks:
+  web:
+    external: true
