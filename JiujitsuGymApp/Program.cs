@@ -3,6 +3,7 @@ using JiujitsuGymApp.Helpers;
 using JiujitsuGymApp.Models;
 using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,17 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// Behind Cloudflare -> nginx, both of which terminate/forward over the local
+// network, so honour X-Forwarded-Proto/-For to recover the original https
+// scheme and client IP. Only the local reverse proxy can reach the app, so
+// the forwarding proxy is trusted rather than pinned to a fixed address.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
 builder.Services.AddScoped<ScheduleService>();
@@ -50,6 +62,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromDays(14);
     options.SlidingExpiration = true;
+    // The public endpoint is always https (Cloudflare), so never send the
+    // auth cookie over plaintext.
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 // MVC
@@ -91,13 +106,18 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Pipeline
+// Must run before anything that inspects the scheme or client IP so the
+// rest of the pipeline sees the original https request from behind the proxy.
+app.UseForwardedHeaders();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// No UseHttpsRedirection: Cloudflare terminates TLS and enforces https, and
+// the nginx -> app hop is intentionally plain http on the loopback.
 app.UseStaticFiles();
 
 app.UseRouting();
