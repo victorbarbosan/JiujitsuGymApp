@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using JiujitsuGymApp.Models;
 using JiujitsuGymApp.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -50,8 +51,21 @@ namespace JiujitsuGymApp.Controllers
 
         public IActionResult Privacy() => View();
 
+        // Anonymous for the same reason as StatusCodePage below: guests must
+        // see the error page, not a login redirect.
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error() =>
             View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+
+        // Target of UseStatusCodePagesWithReExecute. Anonymous because the
+        // global authorize filter would otherwise turn a guest's 404 into a
+        // login redirect.
+        [AllowAnonymous]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult StatusCodePage(int code) =>
+            code == 404
+                ? View("NotFound")
+                : View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

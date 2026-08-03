@@ -116,6 +116,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Branded pages for bodyless error responses (404 on unknown routes, etc.).
+// Re-execute keeps the original status code, so clients still see the 404.
+app.UseStatusCodePagesWithReExecute("/Home/StatusCodePage", "?code={0}");
+
 // No UseHttpsRedirection: Cloudflare terminates TLS and enforces https, and
 // the nginx -> app hop is intentionally plain http on the loopback.
 app.UseStaticFiles();
