@@ -1,3 +1,6 @@
+# Local development only. Production lives in the private infra repo at
+# jiujitsugymapp/docker-compose.yml and is applied by its pipeline, so
+# editing this file has no effect on the Pi.
 services:
   db:
     image: postgres:17-alpine

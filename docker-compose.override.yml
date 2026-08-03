@@ -1,8 +1,7 @@
 # Development-only port bindings. docker compose loads this file
-# automatically next to docker-compose.yml; the Pi opts out because its
-# COMPOSE_FILE explicitly selects the base + prod files, so in production
-# nothing is published on the host - nginx reaches the app over the shared
-# `web` docker network instead.
+# automatically next to docker-compose.yml. The Pi never sees either file -
+# it deploys from the infra repo's own compose, which publishes nothing on
+# the host because nginx reaches the app over the shared `web` network.
 services:
   db:
     ports:
