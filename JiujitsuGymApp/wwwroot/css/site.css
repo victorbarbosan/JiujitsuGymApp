@@ -17,3 +17,38 @@ html {
 .validation-summary-valid {
   display: none;
 }
+
+/* Auth layout (login, register).
+
+   These live here rather than in _AuthLayout.cshtml.css because Razor's CSS
+   isolation does not stamp its scope attribute onto <html>, <head> or <body>,
+   so a scoped `.auth-body` rule never matches and the page collapses to its
+   content height, leaving a gap under the footer. */
+.auth-body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #f8f9fb 0%, #eceef6 100%);
+}
+
+.auth-shell {
+  flex: 1 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 26rem;
+}
+
+/* Views with more fields than a login form opt into a wider panel. */
+.auth-panel-wide {
+  max-width: 34rem;
+}
+
+.auth-footer {
+  flex-shrink: 0;
+}
