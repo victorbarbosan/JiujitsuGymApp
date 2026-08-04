@@ -1,0 +1,25 @@
+@* Cross-site footer links, shared by the main layout and the auth layout.
+   A single wrapping row, so the footer is one line on desktop and only grows
+   on narrow screens. *@
+@* gap-2 rather than column-gap/row-gap: this is Bootstrap 5.1. *@
+<div class="small d-flex flex-wrap justify-content-center align-items-center gap-2">
+    <a href="https://victor-barbosa.com" class="link-secondary text-decoration-none">Portfolio</a>
+    <span aria-hidden="true">/</span>
+    <a href="https://blog.victor-barbosa.com" class="link-secondary text-decoration-none">Blog</a>
+    <span aria-hidden="true">/</span>
+    <a asp-area="" asp-controller="Home" asp-action="Index" class="link-secondary text-decoration-none">Gym App</a>
+    <span aria-hidden="true">/</span>
+    <a href="https://github.com/victorbarbosan" target="_blank" class="link-secondary text-decoration-none">GitHub</a>
+    <span aria-hidden="true">/</span>
+    <a href="https://www.linkedin.com/in/victor-barbosa-8b6a53247/" target="_blank" class="link-secondary text-decoration-none">LinkedIn</a>
+    <span aria-hidden="true">/</span>
+    <a asp-area="" asp-controller="Home" asp-action="Privacy" class="link-secondary text-decoration-none">Privacy</a>
+
+    <span class="mx-1" aria-hidden="true">&bull;</span>
+
+    <span>&copy; @DateTime.UtcNow.Year Victor Barbosa</span>
+    <span aria-hidden="true">&bull;</span>
+    <span>Hosted on Raspberry Pi</span>
+    <span aria-hidden="true">&bull;</span>
+    <a href="https://victor-barbosa.com/infra/" class="link-secondary">Monitored 24/7</a>
+</div>
