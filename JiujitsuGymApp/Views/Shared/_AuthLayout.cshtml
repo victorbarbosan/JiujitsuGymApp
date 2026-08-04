@@ -1,0 +1,44 @@
+@*
+    Layout for the signed-out pages (login, register).
+
+    Every controller action is behind a global AuthorizeFilter, so a visitor on
+    these pages cannot reach Classes, Products or Admin — the main navbar would
+    only offer links that bounce straight back here, plus a "Login" button on
+    the login page itself. This layout drops the navbar and centres the form
+    instead, keeping only the cross-site footer.
+*@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <partial name="_Head" />
+</head>
+
+<body class="auth-body">
+    <main class="auth-shell" role="main">
+        @* Views with more fields than a login form opt into a wider panel. *@
+        <div class="auth-panel @(ViewData["AuthPanelWide"] as bool? == true ? "auth-panel-wide" : null)">
+            @* alt is empty on purpose: the wordmark beside it already carries
+               the name, so alt text here would just be announced twice. *@
+            <div class="auth-brand">
+                <span class="auth-brand-mark">
+                    <img src="~/favicon.png" alt="" width="32" height="32" asp-append-version="true" />
+                </span>
+                <span class="auth-brand-name">Gym App</span>
+            </div>
+
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="auth-footer border-top text-muted">
+        <div class="container py-2 text-center">
+            <partial name="_SiteFooter" />
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

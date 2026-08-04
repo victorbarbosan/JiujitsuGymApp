@@ -1,32 +1,10 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - JiujitsuGymApp</title>
-    <link rel="icon" type="image/png" href="~/favicon.png" asp-append-version="true" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/JiujitsuGymApp.styles.css" asp-append-version="true" />
-    <!-- Add Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-    @using Microsoft.AspNetCore.Hosting
-    @inject IWebHostEnvironment Env
-
-    @if (Env.IsDevelopment())
-    {
-        <script type="module" src="http://localhost:5173/@@vite/client"></script>
-        <script type="module" src="http://localhost:5173/src/main.js"></script>
-    }
-    else
-    {
-        <script type="module" src="~/dist/js/app.js" asp-append-version="true"></script>
-        <link rel="stylesheet" href="~/dist/assets/main.css" asp-append-version="true">
-    }
+    <partial name="_Head" />
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -76,31 +54,15 @@
         </nav>
     </header>
 
-    <div class="container">
+    <div class="container flex-grow-1">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container py-3 text-center">
-            <div class="mb-1 small">
-                <a href="https://victor-barbosa.com" class="link-secondary text-decoration-none">Portfolio</a>
-                <span class="mx-2 text-muted">/</span>
-                <a href="https://blog.victor-barbosa.com" class="link-secondary text-decoration-none">Blog</a>
-                <span class="mx-2 text-muted">/</span>
-                <a asp-area="" asp-controller="Home" asp-action="Index" class="link-secondary text-decoration-none">Gym App</a>
-                <span class="mx-2 text-muted">/</span>
-                <a href="https://github.com/victorbarbosan" target="_blank" class="link-secondary text-decoration-none">GitHub</a>
-                <span class="mx-2 text-muted">/</span>
-                <a href="https://www.linkedin.com/in/victor-barbosa-8b6a53247/" target="_blank" class="link-secondary text-decoration-none">LinkedIn</a>
-                <span class="mx-2 text-muted">/</span>
-                <a asp-area="" asp-controller="Home" asp-action="Privacy" class="link-secondary text-decoration-none">Privacy</a>
-            </div>
-            <div class="small">
-                &copy; @DateTime.UtcNow.Year Victor Barbosa &nbsp;&bull;&nbsp; Hosted on Raspberry Pi &nbsp;&bull;&nbsp;
-                <a href="https://victor-barbosa.com/infra/" class="link-secondary">Monitored 24/7</a>
-            </div>
+    <footer class="border-top text-muted">
+        <div class="container py-2 text-center">
+            <partial name="_SiteFooter" />
         </div>
     </footer>
 

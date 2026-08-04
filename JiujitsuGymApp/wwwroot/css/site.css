@@ -12,11 +12,75 @@ html {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+/* asp-validation-summary renders its container even when there is nothing to
+   report, which otherwise shows an empty alert box above every form. */
+.validation-summary-valid {
+  display: none;
 }
 
-body {
-  margin-bottom: 60px;
+/* Auth layout (login, register).
+
+   These live here rather than in _AuthLayout.cshtml.css because Razor's CSS
+   isolation does not stamp its scope attribute onto <html>, <head> or <body>,
+   so a scoped `.auth-body` rule never matches and the page collapses to its
+   content height, leaving a gap under the footer. */
+.auth-body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #f8f9fb 0%, #eceef6 100%);
+}
+
+.auth-shell {
+  flex: 1 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 26rem;
+}
+
+/* Brand lockup above the form: favicon mark + wordmark. */
+.auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-bottom: 1.5rem;
+}
+
+/* The favicon is a 32x32 near-white gi, so it needs a filled disc behind it to
+   read against the light background. #0d6efd is Bootstrap's primary, the same
+   blue as the submit button. The image sits at its native size: upscaling a
+   32px source to fill the disc just looks blurry. */
+.auth-brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #0d6efd;
+}
+
+.auth-brand-name {
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #343a40;
+}
+
+/* Views with more fields than a login form opt into a wider panel. */
+.auth-panel-wide {
+  max-width: 34rem;
+}
+
+.auth-footer {
+  flex-shrink: 0;
 }
