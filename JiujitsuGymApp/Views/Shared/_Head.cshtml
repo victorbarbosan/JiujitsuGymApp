@@ -1,0 +1,25 @@
+@using Microsoft.AspNetCore.Hosting
+@inject IWebHostEnvironment Env
+
+@* Shared <head> contents for every layout, so the asset list cannot drift
+   between the main layout and the auth layout. *@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>@ViewData["Title"] - JiujitsuGymApp</title>
+<link rel="icon" type="image/png" href="~/favicon.png" asp-append-version="true" />
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/JiujitsuGymApp.styles.css" asp-append-version="true" />
+<!-- Add Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+@if (Env.IsDevelopment())
+{
+    <script type="module" src="http://localhost:5173/@@vite/client"></script>
+    <script type="module" src="http://localhost:5173/src/main.js"></script>
+}
+else
+{
+    <script type="module" src="~/dist/js/app.js" asp-append-version="true"></script>
+    <link rel="stylesheet" href="~/dist/assets/main.css" asp-append-version="true">
+}
