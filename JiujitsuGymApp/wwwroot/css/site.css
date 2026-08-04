@@ -44,6 +44,38 @@ html {
   max-width: 26rem;
 }
 
+/* Brand lockup above the form: favicon mark + wordmark. */
+.auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-bottom: 1.5rem;
+}
+
+/* The favicon is a 32x32 near-white gi, so it needs a filled disc behind it to
+   read against the light background. #0d6efd is Bootstrap's primary, the same
+   blue as the submit button. The image sits at its native size: upscaling a
+   32px source to fill the disc just looks blurry. */
+.auth-brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #0d6efd;
+}
+
+.auth-brand-name {
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #343a40;
+}
+
 /* Views with more fields than a login form opt into a wider panel. */
 .auth-panel-wide {
   max-width: 34rem;
