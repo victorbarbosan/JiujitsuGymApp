@@ -1,82 +1,93 @@
-﻿@model LoginViewModel
+@model LoginViewModel
 @{
     ViewData["Title"] = "Login";
+    Layout = "_AuthLayout";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0 text-center">
-                        <i class="fas fa-sign-in-alt me-2"></i>Login to Your Account
-                    </h3>
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-sm-5">
+        <h1 class="h4 fw-bold mb-1">Welcome back</h1>
+        <p class="text-muted small mb-4">
+            Log in to check in to classes and track your belt progress.
+        </p>
+
+        <form asp-action="Login" method="post" asp-route-returnurl="@ViewData["ReturnUrl"]">
+            @Html.AntiForgeryToken()
+
+            <!-- Validation Summary -->
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+
+            <!-- Email Field -->
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label small fw-semibold"></label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                    </span>
+                    <input asp-for="Email" class="form-control" placeholder="you@example.com"
+                           autocomplete="username" autocapitalize="none" spellcheck="false" autofocus />
                 </div>
-                <div class="card-body">
-                    <form asp-action="Login" method="post" asp-route-returnurl="@ViewData["ReturnUrl"]">
-                        @Html.AntiForgeryToken()
-
-                        <!-- Validation Summary -->
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
-                        <!-- Email Field -->
-                        <div class="mb-3">
-                            <label asp-for="Email" class="form-label"></label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fas fa-envelope"></i>
-                                </span>
-                                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
-                            </div>
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
-
-                        <!-- Password Field -->
-                        <div class="mb-3">
-                            <label asp-for="Password" class="form-label"></label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="fas fa-lock"></i>
-                                </span>
-                                <input asp-for="Password" class="form-control" placeholder="Enter your password" />
-                            </div>
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                        </div>
-
-                        <!-- Remember Me -->
-                        <div class="mb-3 form-check">
-                            <input asp-for="RememberMe" class="form-check-input" />
-                            <label asp-for="RememberMe" class="form-check-label"></label>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-sign-in-alt me-2"></i>Login
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- Links -->
-                    <div class="mt-4 text-center">
-                        <p class="mb-2">
-                            Don't have an account?
-                            <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">
-                                Register here
-                            </a>
-                        </p>
-                        <p class="mb-0">
-                            <a href="#" class="text-muted">Forgot your password?</a>
-                        </p>
-                    </div>
-                </div>
+                <span asp-validation-for="Email" class="text-danger small"></span>
             </div>
-        </div>
+
+            <!-- Password Field -->
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label small fw-semibold"></label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-lock" aria-hidden="true"></i>
+                    </span>
+                    <input asp-for="Password" class="form-control" placeholder="Enter your password"
+                           autocomplete="current-password" />
+                    <button class="btn btn-outline-secondary" type="button"
+                            id="togglePassword" aria-label="Show password" aria-pressed="false">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <!-- Remember Me -->
+            <div class="mb-4 form-check">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label small"></label>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-sign-in-alt me-2" aria-hidden="true"></i>Login
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+
+<!-- Links -->
+<p class="text-center text-muted small mt-4 mb-0">
+    Don't have an account?
+    <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">Register here</a>
+</p>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        (function () {
+            const toggle = document.getElementById('togglePassword');
+            const password = document.getElementById('@Html.IdFor(m => m.Password)');
+            if (!toggle || !password) return;
+
+            toggle.addEventListener('click', () => {
+                const shown = password.type === 'text';
+                password.type = shown ? 'password' : 'text';
+                toggle.setAttribute('aria-pressed', String(!shown));
+                toggle.setAttribute('aria-label', shown ? 'Show password' : 'Hide password');
+                toggle.querySelector('i').className = shown ? 'fas fa-eye' : 'fas fa-eye-slash';
+                password.focus();
+            });
+        })();
+    </script>
 }
