@@ -25,7 +25,7 @@ namespace JiujitsuGymApp.Controllers
         [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
-            ViewData["ReturnUrl"] = null;
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
