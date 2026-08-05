@@ -9,17 +9,20 @@ namespace JiujitsuGymApp.Controllers
     public class ProfileController : Controller
     {
         private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
         private readonly ILogger<ProfileController> _logger;
         private readonly ClassService _classService;
         private readonly UserService _userService;
 
         public ProfileController(
             UserManager<User> userManager,
+            SignInManager<User> signInManager,
             ILogger<ProfileController> logger,
             ClassService classService,
             UserService userService)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _logger = logger;
             _classService = classService;
             _userService = userService;
@@ -76,6 +79,19 @@ namespace JiujitsuGymApp.Controllers
                     ModelState.AddModelError(string.Empty, error);
                 return View(model);
             }
+
+            // The navbar reads FirstName, LastName and Belt from claims stamped
+            // into the auth cookie, so an edit would not reach it until the next
+            // sign-in - the page you were just on would show the new belt while
+            // the navbar kept the old one. Re-issuing the cookie runs the claims
+            // factory again and picks the new values up on the next request.
+            //
+            // It also keeps the session alive: changing the email rotates the
+            // security stamp, which would otherwise sign the user out the next
+            // time that stamp is validated.
+            var updated = await _userManager.FindByIdAsync(userId);
+            if (updated is not null)
+                await _signInManager.RefreshSignInAsync(updated);
 
             _logger.LogInformation("User updated profile: {Email}", dto.Email);
             TempData["SuccessMessage"] = "Profile updated successfully.";

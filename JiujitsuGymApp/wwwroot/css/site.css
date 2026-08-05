@@ -18,6 +18,121 @@ html {
   display: none;
 }
 
+/* Belt colours.
+
+   Put the class on any element and everything inside it can read the rank.
+   Custom properties inherit through a shadow boundary, so a Lit component
+   nested under one of these picks the rank up without being told which belt
+   the user holds.
+
+   --belt-color, --belt-text and --avatar-accent are the names the profile
+   components already set inline, kept so there is one vocabulary. --belt-hi
+   and --belt-lo are the ends of the avatar gradient: hand-picked Material
+   steps rather than a computed lighten/darken, because white has no lighter
+   step and black no darker one, and both need a ramp that still reads.
+
+   Values match getBeltConfig in ClientApp/src/components/profile/
+   profile-utils.js, which the profile components still use directly. Two
+   copies is one too many - worth collapsing onto these variables.
+
+   Purple here is the rank, not the old theme accent. It stays purple. */
+.belt-white  { --belt-color: #ffffff; --belt-text: #333333; --avatar-accent: #0d6efd; --belt-hi: #ffffff; --belt-lo: #d5dbe2; }
+.belt-grey   { --belt-color: #9e9e9e; --belt-text: #ffffff; --avatar-accent: #757575; --belt-hi: #bdbdbd; --belt-lo: #6d6d6d; }
+.belt-yellow { --belt-color: #ffeb3b; --belt-text: #333333; --avatar-accent: #fbc02d; --belt-hi: #fff59d; --belt-lo: #f9a825; }
+.belt-orange { --belt-color: #ff9800; --belt-text: #ffffff; --avatar-accent: #ff9800; --belt-hi: #ffb74d; --belt-lo: #ef6c00; }
+.belt-green  { --belt-color: #4caf50; --belt-text: #ffffff; --avatar-accent: #4caf50; --belt-hi: #81c784; --belt-lo: #2e7d32; }
+.belt-blue   { --belt-color: #2196f3; --belt-text: #ffffff; --avatar-accent: #2196f3; --belt-hi: #64b5f6; --belt-lo: #1565c0; }
+/* Purple sits two steps darker than the other ranks take: at Material 300 the
+   highlight washed the top of the disc out to pink. 600 holds its hue under
+   the highlight. */
+.belt-purple { --belt-color: #7b1fa2; --belt-text: #ffffff; --avatar-accent: #7b1fa2; --belt-hi: #8e24aa; --belt-lo: #4a148c; }
+.belt-brown  { --belt-color: #795548; --belt-text: #ffffff; --avatar-accent: #795548; --belt-hi: #a1887f; --belt-lo: #4e342e; }
+.belt-black  { --belt-color: #212121; --belt-text: #ffffff; --avatar-accent: #212121; --belt-hi: #4a4a4a; --belt-lo: #000000; }
+
+/* The avatar disc treatment, written once and reused by every avatar in the
+   app - including the one inside <user-nav>'s shadow root, which cannot see
+   these class names but does inherit the properties.
+
+   Declared on the belt-* elements rather than :root, and that placement is
+   load-bearing. The var() references inside a custom property are substituted
+   against the element where the property is *declared*, not where it is
+   later used; the already-substituted result is what inherits. On :root
+   --belt-hi is unset, so every disc would quietly take the fallback blue.
+
+   Deliberately no color-mix(): a var() that fails to substitute computes to
+   the initial value rather than falling back to the previous declaration, so
+   an unsupported function would leave the disc transparent rather than
+   flat-coloured. */
+.belt-white, .belt-grey, .belt-yellow, .belt-orange, .belt-green,
+.belt-blue, .belt-purple, .belt-brown, .belt-black {
+  --avatar-surface:
+    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.30), transparent 56%),
+    linear-gradient(140deg, var(--belt-hi, #4d9bff), var(--belt-lo, #0a58ca));
+
+  /* The hairline is not decoration: a white belt is #ffffff on a near-white
+     panel and would otherwise have no edge at all. It disappears against the
+     darker ranks, where the drop shadow does the separating instead. */
+  --avatar-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.14),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+/* Initials disc, shown until there is a photo to put here instead. */
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--avatar-surface);
+  color: var(--belt-text, #ffffff);
+  box-shadow: var(--avatar-shadow);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+/* Navbar links.
+
+   Bootstrap's .nav-link is bare text with no hit area of its own. That was
+   tolerable while each link carried an icon; without one they read as body
+   copy sitting in a white bar. The pill gives them a shape to occupy, lights
+   up on hover, and stays lit for the section you are in.
+
+   Scoped to .navbar so it cannot reach the .nav-link elements Bootstrap also
+   uses for tabs and pills elsewhere in the app.
+
+   The selectors are three and four classes deep to match the depth Bootstrap
+   uses - .navbar-light .navbar-nav .nav-link.active and
+   .navbar-expand-sm .navbar-nav .nav-link. Anything shorter loses on
+   specificity and the colour and padding here never apply. Ties are settled by
+   source order, and site.css is linked after bootstrap.min.css. */
+.navbar .navbar-nav {
+  gap: 0.25rem;
+}
+
+.navbar .navbar-nav .nav-link {
+  color: #495057;
+  font-weight: 500;
+  padding: 0.4rem 0.85rem;
+  border-radius: 0.5rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.navbar .navbar-nav .nav-link:hover,
+.navbar .navbar-nav .nav-link:focus-visible {
+  color: #0d6efd;
+  background-color: rgba(13, 110, 253, 0.08);
+}
+
+/* Same blue as the mark and the submit button, so "where I am" uses the one
+   accent rather than introducing a second. */
+.navbar .navbar-nav .nav-link.active {
+  color: #0d6efd;
+  background-color: rgba(13, 110, 253, 0.12);
+}
+
 /* Brand mark (_BrandMark.cshtml).
 
    The partial ships no width/height, so every caller must set both. display:
@@ -44,17 +159,27 @@ html {
 
    The grid is masked to an ellipse so it dissolves before it reaches the
    corners. Without that it reads as a boxed-in tile, and the dots collide with
-   the buttons at the bottom of the panel. */
-.hero-panel {
+   the buttons at the bottom of the panel.
+
+   Shared with .dashboard-greeting, the signed-in banner, so the first thing
+   both a visitor and a member see sits on the same surface. Only the shape
+   differs: the landing hero sets its own large radius, while the banner keeps
+   the Bootstrap rounding and border it carries in the markup. */
+.hero-panel,
+.dashboard-greeting {
   position: relative;
   overflow: hidden;
-  border-radius: 1.5rem;
   background:
     radial-gradient(ellipse 60% 55% at 50% 22%, rgba(13, 110, 253, 0.10), transparent 70%),
     linear-gradient(180deg, #f8fafd 0%, #eaeff8 100%);
 }
 
-.hero-panel::before {
+.hero-panel {
+  border-radius: 1.5rem;
+}
+
+.hero-panel::before,
+.dashboard-greeting::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -68,7 +193,8 @@ html {
 
 /* The grid is a positioned pseudo-element, so it paints over any static
    sibling. Giving the real content a position puts it back on top. */
-.hero-panel > * {
+.hero-panel > *,
+.dashboard-greeting > * {
   position: relative;
 }
 

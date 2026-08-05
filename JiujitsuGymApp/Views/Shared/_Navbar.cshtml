@@ -1,5 +1,9 @@
 @{
     var isAuthenticated = User?.Identity?.IsAuthenticated == true;
+
+    @* Which section is open, so the matching link can be marked. RouteData is
+       the controller actually selected, which beats comparing request paths. *@
+    var section = ViewContext.RouteData.Values["controller"] as string;
 }
 @* Shared navbar for every layout, for the same reason _Head is a partial: so
    the two cannot drift apart.
@@ -26,23 +30,23 @@
                 @if (isAuthenticated)
                 {
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Classes" asp-action="Index">
-                            <i class="fas fa-calendar-alt me-1"></i>Classes
-                        </a>
+                        <a class="nav-link @(section == "Classes" ? "active" : null)"
+                           aria-current="@(section == "Classes" ? "page" : null)"
+                           asp-area="" asp-controller="Classes" asp-action="Index">Classes</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">
-                            <i class="fas fa-shopping-bag me-1"></i>Products
-                        </a>
+                        <a class="nav-link @(section == "Products" ? "active" : null)"
+                           aria-current="@(section == "Products" ? "page" : null)"
+                           asp-area="" asp-controller="Products" asp-action="Index">Products</a>
                     </li>
 
                     @* Admin link *@
                     @if (User.IsInRole("Admin"))
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">
-                                <i class="fas fa-shield-alt me-1"></i>Admin
-                            </a>
+                            <a class="nav-link @(section == "Admin" ? "active" : null)"
+                               aria-current="@(section == "Admin" ? "page" : null)"
+                               asp-area="" asp-controller="Admin" asp-action="Index">Admin</a>
                         </li>
                     }
                 }
@@ -56,7 +60,12 @@
             {
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
+                        @* belt-* on the host feeds --belt-main and --belt-text to the
+                           component's avatar; custom properties reach into its shadow
+                           root. Falls back to White for a principal issued before the
+                           Belt claim existed. *@
                         <user-nav id="userNav"
+                                  class="belt-@((User.FindFirst("Belt")?.Value ?? "White").ToLowerInvariant())"
                                   is-authenticated="true"
                                   user-name="@($"{User.FindFirst("FirstName")?.Value} {User.FindFirst("LastName")?.Value}".Trim() ?? User.Identity?.Name ?? "Guest")">
                         </user-nav>

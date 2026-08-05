@@ -47,11 +47,9 @@ export class UserNav extends LitElement {
             return html`
         <div class="auth-links">
           <button class="dropdown-item" @click=${() => this.handleItemClick('login')}>
-            <div class="icon">🔐</div>
             Login
           </button>
           <button class="dropdown-item" @click=${() => this.handleItemClick('register')}>
-            <div class="icon">👤</div>
             Register
           </button>
         </div>
@@ -71,20 +69,16 @@ export class UserNav extends LitElement {
         
         <div class="dropdown-menu ${this.isOpen ? 'open' : ''}">
           <button class="dropdown-item" @click=${() => this.handleItemClick('profile')}>
-            <div class="icon">👤</div>
             My Profile
           </button>
           <button class="dropdown-item" @click=${() => this.handleItemClick('edit-profile')}>
-            <div class="icon">✏️</div>
             Edit Profile
           </button>
           <button class="dropdown-item" @click=${() => this.handleItemClick('change-password')}>
-            <div class="icon">🔑</div>
             Change Password
           </button>
           <div class="dropdown-divider"></div>
           <button class="dropdown-item logout" @click=${() => this.handleItemClick('logout')}>
-            <div class="icon">🚪</div>
             Logout
           </button>
         </div>
@@ -122,17 +116,24 @@ export class UserNav extends LitElement {
       border-color: #adb5bd;
     }
     
+    /* --avatar-surface, --avatar-shadow and --belt-text all come from site.css
+       via the belt-* class the host carries. Custom properties cross the
+       shadow boundary, so this rule needs no knowledge of which belt is which
+       and the disc matches the dashboard one without duplicating the recipe.
+       Fallbacks cover a host that sets no belt class. */
     .user-avatar {
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--avatar-surface, linear-gradient(140deg, #4d9bff, #0a58ca));
+      color: var(--belt-text, #ffffff);
+      box-shadow: var(--avatar-shadow, 0 2px 8px rgba(0, 0, 0, 0.18));
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
       font-weight: bold;
       font-size: 14px;
+      letter-spacing: 0.02em;
     }
     
     .dropdown-menu {

@@ -58,10 +58,11 @@ else if (Model is not null)
     <!-- ── Authenticated dashboard ── -->
 
     <!-- Greeting hero -->
-    <div class="p-4 mb-4 rounded-3 border" style="background: linear-gradient(135deg, #667eea22, #764ba211);">
+    <div class="dashboard-greeting p-4 mb-4 rounded-3 border">
         <div class="d-flex align-items-center gap-3">
-            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold fs-4"
-                 style="width:56px;height:56px;background:linear-gradient(135deg,#667eea,#764ba2);flex-shrink:0;">
+            @* belt-* supplies the disc's colours; see site.css. *@
+            <div class="avatar-initials belt-@Model.Belt.ToLowerInvariant() fs-4"
+                 style="width:56px;height:56px;">
                 @Model.FirstName[0]
             </div>
             <div>

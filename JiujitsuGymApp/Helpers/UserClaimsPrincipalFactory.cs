@@ -23,6 +23,13 @@ namespace JiujitsuGymApp.Helpers
             identity.AddClaim(new Claim("FirstName", user.FirstName ?? ""));
             identity.AddClaim(new Claim("LastName", user.LastName ?? ""));
 
+            // Belt drives the avatar colour in the navbar, which renders on
+            // every page. A claim keeps that from costing a user lookup per
+            // request. It is baked into the auth cookie, so a promotion does
+            // not show here until the principal is regenerated - on the next
+            // sign-in, or when the security stamp is next validated.
+            identity.AddClaim(new Claim("Belt", (user.Belt ?? BeltColor.White).ToString()));
+
             return identity;
         }
     }
