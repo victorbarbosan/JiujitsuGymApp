@@ -159,17 +159,27 @@ html {
 
    The grid is masked to an ellipse so it dissolves before it reaches the
    corners. Without that it reads as a boxed-in tile, and the dots collide with
-   the buttons at the bottom of the panel. */
-.hero-panel {
+   the buttons at the bottom of the panel.
+
+   Shared with .dashboard-greeting, the signed-in banner, so the first thing
+   both a visitor and a member see sits on the same surface. Only the shape
+   differs: the landing hero sets its own large radius, while the banner keeps
+   the Bootstrap rounding and border it carries in the markup. */
+.hero-panel,
+.dashboard-greeting {
   position: relative;
   overflow: hidden;
-  border-radius: 1.5rem;
   background:
     radial-gradient(ellipse 60% 55% at 50% 22%, rgba(13, 110, 253, 0.10), transparent 70%),
     linear-gradient(180deg, #f8fafd 0%, #eaeff8 100%);
 }
 
-.hero-panel::before {
+.hero-panel {
+  border-radius: 1.5rem;
+}
+
+.hero-panel::before,
+.dashboard-greeting::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -183,7 +193,8 @@ html {
 
 /* The grid is a positioned pseudo-element, so it paints over any static
    sibling. Giving the real content a position puts it back on top. */
-.hero-panel > * {
+.hero-panel > *,
+.dashboard-greeting > * {
   position: relative;
 }
 
