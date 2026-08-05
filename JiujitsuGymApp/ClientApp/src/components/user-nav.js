@@ -47,11 +47,9 @@ export class UserNav extends LitElement {
             return html`
         <div class="auth-links">
           <button class="dropdown-item" @click=${() => this.handleItemClick('login')}>
-            <div class="icon">🔐</div>
             Login
           </button>
           <button class="dropdown-item" @click=${() => this.handleItemClick('register')}>
-            <div class="icon">👤</div>
             Register
           </button>
         </div>
@@ -71,20 +69,16 @@ export class UserNav extends LitElement {
         
         <div class="dropdown-menu ${this.isOpen ? 'open' : ''}">
           <button class="dropdown-item" @click=${() => this.handleItemClick('profile')}>
-            <div class="icon">👤</div>
             My Profile
           </button>
           <button class="dropdown-item" @click=${() => this.handleItemClick('edit-profile')}>
-            <div class="icon">✏️</div>
             Edit Profile
           </button>
           <button class="dropdown-item" @click=${() => this.handleItemClick('change-password')}>
-            <div class="icon">🔑</div>
             Change Password
           </button>
           <div class="dropdown-divider"></div>
           <button class="dropdown-item logout" @click=${() => this.handleItemClick('logout')}>
-            <div class="icon">🚪</div>
             Logout
           </button>
         </div>
