@@ -1,11 +1,13 @@
 @*
     Layout for the signed-out pages (login, register).
 
-    Every controller action is behind a global AuthorizeFilter, so a visitor on
-    these pages cannot reach Classes, Products or Admin — the main navbar would
-    only offer links that bounce straight back here, plus a "Login" button on
-    the login page itself. This layout drops the navbar and centres the form
-    instead, keeping only the cross-site footer.
+    What separates this from _Layout is the centred panel, not the chrome: the
+    form sits in a fixed-width column against a gradient, where _Layout gives a
+    full-width container. Both carry the same navbar and footer.
+
+    The navbar renders as the brand alone for a guest, which is the whole reason
+    it can live here now - it offers a way back to the landing page without the
+    Classes and Products links that would only bounce a visitor to login.
 *@
 <!DOCTYPE html>
 <html lang="en">
@@ -14,6 +16,10 @@
 </head>
 
 <body class="auth-body">
+    <header>
+        <partial name="_Navbar" />
+    </header>
+
     <main class="auth-shell" role="main">
         @* Views with more fields than a login form opt into a wider panel. *@
         <div class="auth-panel @(ViewData["AuthPanelWide"] as bool? == true ? "auth-panel-wide" : null)">
