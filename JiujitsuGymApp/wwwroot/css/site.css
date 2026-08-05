@@ -18,6 +18,69 @@ html {
   display: none;
 }
 
+/* Brand mark (_BrandMark.cshtml).
+
+   The partial ships no width/height, so every caller must set both. display:
+   block stops the inline-SVG baseline gap from pushing it off-centre inside a
+   flex row. */
+.brand-mark {
+  display: block;
+}
+
+/* Blue rather than inheriting the navbar's near-black: it is the same #0d6efd
+   as the submit button and the auth disc, so the accent reads as deliberate
+   across the two layouts instead of appearing only when signed out. */
+.navbar-brand .brand-mark {
+  width: 30px;
+  height: 30px;
+  color: #0d6efd;
+}
+
+/* Landing hero panel.
+
+   The background is three CSS layers rather than an image, so the hero costs
+   no extra request: a base wash, a tint centred behind the logo, and a dot
+   grid that echoes the four nodes in the mark.
+
+   The grid is masked to an ellipse so it dissolves before it reaches the
+   corners. Without that it reads as a boxed-in tile, and the dots collide with
+   the buttons at the bottom of the panel. */
+.hero-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 22%, rgba(13, 110, 253, 0.10), transparent 70%),
+    linear-gradient(180deg, #f8fafd 0%, #eaeff8 100%);
+}
+
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(13, 110, 253, 0.55) 1.1px, transparent 1.1px);
+  background-size: 24px 24px;
+  opacity: 0.22;
+  -webkit-mask-image: radial-gradient(ellipse 65% 60% at 50% 30%, #000 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 65% 60% at 50% 30%, #000 35%, transparent 100%);
+  pointer-events: none;
+}
+
+/* The grid is a positioned pseudo-element, so it paints over any static
+   sibling. Giving the real content a position puts it back on top. */
+.hero-panel > * {
+  position: relative;
+}
+
+/* Landing hero. The wrapper centres the mark: `display: block` on the SVG
+   itself means text-align on the parent has nothing to act on. */
+.hero-brand-mark .brand-mark {
+  width: 92px;
+  height: 92px;
+  margin-inline: auto;
+  color: #0d6efd;
+}
+
 /* Auth layout (login, register).
 
    These live here rather than in _AuthLayout.cshtml.css because Razor's CSS
@@ -53,18 +116,26 @@ html {
   margin-bottom: 1.5rem;
 }
 
-/* The favicon is a 32x32 near-white gi, so it needs a filled disc behind it to
-   read against the light background. #0d6efd is Bootstrap's primary, the same
-   blue as the submit button. The image sits at its native size: upscaling a
-   32px source to fill the disc just looks blurry. */
+/* The mark is knocked out in white on a filled disc, which gives it enough
+   weight to anchor the panel above a form. #0d6efd is Bootstrap's primary, the
+   same blue as the submit button. */
 .auth-brand-mark {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: #0d6efd;
+  color: #fff;
+}
+
+/* 36 of 52px. The mark's own bounding box is ~72% of its viewBox, so this lands
+   the ink at roughly half the disc's width and matches how the favicon sits in
+   its rounded square. */
+.auth-brand-mark .brand-mark {
+  width: 36px;
+  height: 36px;
 }
 
 .auth-brand-name {

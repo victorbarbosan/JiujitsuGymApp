@@ -1,0 +1,21 @@
+@* The Nexus BJJ mark: an N whose corners are nodes, with the diagonal running
+   behind the two uprights so it reads as a strap threaded through them.
+
+   Inlined rather than an <img src="~/img/brand/nexus-mark.svg"> because an SVG
+   loaded through <img> is its own document and cannot see the page's colours.
+   Inline, `currentColor` resolves against whatever this sits in: white on the
+   auth page's blue disc, blue in the navbar. The standalone file is kept for
+   anything outside the app (patches, social avatars).
+
+   No dimensions here on purpose. Callers size it in CSS, which keeps the two
+   use sites from having to agree on a number. *@
+<svg class="brand-mark" viewBox="0 0 64 64" fill="none" aria-hidden="true" focusable="false"
+     xmlns="http://www.w3.org/2000/svg">
+    <path d="M11.9 10.4 52.1 53.6" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" />
+    <path d="M18 47V17" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" />
+    <path d="M46 47V17" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" />
+    <circle cx="18" cy="47" r="7" fill="currentColor" />
+    <circle cx="18" cy="17" r="7" fill="currentColor" />
+    <circle cx="46" cy="47" r="7" fill="currentColor" />
+    <circle cx="46" cy="17" r="7" fill="currentColor" />
+</svg>

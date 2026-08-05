@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 76" fill="none" role="img" aria-label="Nexus BJJ">
+    <title>Nexus BJJ</title>
+    <path d="M11.9 6.4 52.1 49.6" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" />
+    <path d="M18 43V13" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" />
+    <path d="M46 43V13" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" />
+    <circle cx="18" cy="43" r="7" fill="currentColor" />
+    <circle cx="18" cy="13" r="7" fill="currentColor" />
+    <circle cx="46" cy="43" r="7" fill="currentColor" />
+    <circle cx="46" cy="13" r="7" fill="currentColor" />
+    <path d="M10 60h44v12H10Z M33 60h2.5v12H33Z M38 60h2.5v12H38Z M43 60h2.5v12H43Z M48 60h2.5v12H48Z"
+          fill="currentColor" fill-rule="evenodd" />
+</svg>

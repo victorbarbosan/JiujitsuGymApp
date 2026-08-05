@@ -23,6 +23,10 @@ namespace JiujitsuGymApp.Controllers
             _classService = classService;
         }
 
+        // The landing page is the one signed-out entry point besides login and
+        // register: without this the global AuthorizeFilter bounces guests to
+        // /Account/Login and the anonymous branch below can never run.
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             if (!User.Identity?.IsAuthenticated ?? true)

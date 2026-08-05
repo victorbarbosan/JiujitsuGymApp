@@ -8,9 +8,11 @@
 @if (!isAuthenticated)
 {
     <!-- ── Landing hero for guests ── -->
-    <div class="py-5 text-center">
-        <i class="fas fa-dumbbell fa-3x text-primary mb-3"></i>
-        <h1 class="display-5 fw-bold">Welcome to Jiujitsu Gym</h1>
+    <div class="hero-panel py-5 px-3 text-center">
+        <div class="hero-brand-mark mb-3">
+            <partial name="_BrandMark" />
+        </div>
+        <h1 class="display-5 fw-bold">Welcome to Nexus BJJ</h1>
         <p class="lead text-muted col-md-7 mx-auto">
             Track your progress, manage your classes, and train your way to black belt.
         </p>
