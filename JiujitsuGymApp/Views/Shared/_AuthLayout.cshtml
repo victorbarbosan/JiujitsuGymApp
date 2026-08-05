@@ -17,13 +17,13 @@
     <main class="auth-shell" role="main">
         @* Views with more fields than a login form opt into a wider panel. *@
         <div class="auth-panel @(ViewData["AuthPanelWide"] as bool? == true ? "auth-panel-wide" : null)">
-            @* alt is empty on purpose: the wordmark beside it already carries
-               the name, so alt text here would just be announced twice. *@
+            @* The mark is aria-hidden: the wordmark beside it already carries
+               the name, so announcing it too would just repeat. *@
             <div class="auth-brand">
                 <span class="auth-brand-mark">
-                    <img src="~/favicon.png" alt="" width="32" height="32" asp-append-version="true" />
+                    <partial name="_BrandMark" />
                 </span>
-                <span class="auth-brand-name">Gym App</span>
+                <span class="auth-brand-name">Nexus BJJ</span>
             </div>
 
             @RenderBody()

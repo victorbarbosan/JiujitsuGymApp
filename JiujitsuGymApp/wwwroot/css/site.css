@@ -18,6 +18,33 @@ html {
   display: none;
 }
 
+/* Brand mark (_BrandMark.cshtml).
+
+   The partial ships no width/height, so every caller must set both. display:
+   block stops the inline-SVG baseline gap from pushing it off-centre inside a
+   flex row. */
+.brand-mark {
+  display: block;
+}
+
+/* Blue rather than inheriting the navbar's near-black: it is the same #0d6efd
+   as the submit button and the auth disc, so the accent reads as deliberate
+   across the two layouts instead of appearing only when signed out. */
+.navbar-brand .brand-mark {
+  width: 30px;
+  height: 30px;
+  color: #0d6efd;
+}
+
+/* Landing hero. The wrapper centres the mark: `display: block` on the SVG
+   itself means text-align on the parent has nothing to act on. */
+.hero-brand-mark .brand-mark {
+  width: 92px;
+  height: 92px;
+  margin-inline: auto;
+  color: #0d6efd;
+}
+
 /* Auth layout (login, register).
 
    These live here rather than in _AuthLayout.cshtml.css because Razor's CSS
@@ -53,18 +80,26 @@ html {
   margin-bottom: 1.5rem;
 }
 
-/* The favicon is a 32x32 near-white gi, so it needs a filled disc behind it to
-   read against the light background. #0d6efd is Bootstrap's primary, the same
-   blue as the submit button. The image sits at its native size: upscaling a
-   32px source to fill the disc just looks blurry. */
+/* The mark is knocked out in white on a filled disc, which gives it enough
+   weight to anchor the panel above a form. #0d6efd is Bootstrap's primary, the
+   same blue as the submit button. */
 .auth-brand-mark {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   background: #0d6efd;
+  color: #fff;
+}
+
+/* 36 of 52px. The mark's own bounding box is ~72% of its viewBox, so this lands
+   the ink at roughly half the disc's width and matches how the favicon sits in
+   its rounded square. */
+.auth-brand-mark .brand-mark {
+  width: 36px;
+  height: 36px;
 }
 
 .auth-brand-name {
