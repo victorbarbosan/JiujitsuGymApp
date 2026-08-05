@@ -107,7 +107,7 @@ class ProfileProgression extends LitElement {
     .progress-fill {
       height: 100%;
       border-radius: var(--radius-pill);
-      background: var(--belt-color, #667eea);
+      background: var(--belt-color, #0d6efd);
       border: 1px solid rgba(0, 0, 0, 0.1);
       transition: width 0.6s ease;
     }

@@ -60,7 +60,12 @@
             {
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
+                        @* belt-* on the host feeds --belt-main and --belt-text to the
+                           component's avatar; custom properties reach into its shadow
+                           root. Falls back to White for a principal issued before the
+                           Belt claim existed. *@
                         <user-nav id="userNav"
+                                  class="belt-@((User.FindFirst("Belt")?.Value ?? "White").ToLowerInvariant())"
                                   is-authenticated="true"
                                   user-name="@($"{User.FindFirst("FirstName")?.Value} {User.FindFirst("LastName")?.Value}".Trim() ?? User.Identity?.Name ?? "Guest")">
                         </user-nav>
