@@ -36,6 +36,42 @@ html {
   color: #0d6efd;
 }
 
+/* Landing hero panel.
+
+   The background is three CSS layers rather than an image, so the hero costs
+   no extra request: a base wash, a tint centred behind the logo, and a dot
+   grid that echoes the four nodes in the mark.
+
+   The grid is masked to an ellipse so it dissolves before it reaches the
+   corners. Without that it reads as a boxed-in tile, and the dots collide with
+   the buttons at the bottom of the panel. */
+.hero-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 22%, rgba(13, 110, 253, 0.10), transparent 70%),
+    linear-gradient(180deg, #f8fafd 0%, #eaeff8 100%);
+}
+
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(13, 110, 253, 0.55) 1.1px, transparent 1.1px);
+  background-size: 24px 24px;
+  opacity: 0.22;
+  -webkit-mask-image: radial-gradient(ellipse 65% 60% at 50% 30%, #000 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 65% 60% at 50% 30%, #000 35%, transparent 100%);
+  pointer-events: none;
+}
+
+/* The grid is a positioned pseudo-element, so it paints over any static
+   sibling. Giving the real content a position puts it back on top. */
+.hero-panel > * {
+  position: relative;
+}
+
 /* Landing hero. The wrapper centres the mark: `display: block` on the SVG
    itself means text-align on the parent has nothing to act on. */
 .hero-brand-mark .brand-mark {
