@@ -11,15 +11,18 @@ namespace JiujitsuGymApp.Controllers
         private readonly ILogger<AdminController> _logger;
         private readonly UserService _userService;
         private readonly ScheduleService _scheduleService;
+        private readonly DemoDataService _demoDataService;
 
         public AdminController(
             ILogger<AdminController> logger,
             UserService userService,
-            ScheduleService scheduleService)
+            ScheduleService scheduleService,
+            DemoDataService demoDataService)
         {
             _logger = logger;
             _userService = userService;
             _scheduleService = scheduleService;
+            _demoDataService = demoDataService;
         }
 
         // GET : Admin/
@@ -29,6 +32,7 @@ namespace JiujitsuGymApp.Controllers
             var initialUsers = await _userService.GetUsersAsync();
 
             ViewBag.InitialSchedules = await _scheduleService.GetSchedulesAsync();
+            ViewBag.DemoDataStatus = await _demoDataService.GetStatusAsync();
 
             return View(initialUsers);
         }
@@ -132,6 +136,38 @@ namespace JiujitsuGymApp.Controllers
 
             _logger.LogInformation("Admin updated user: {Email}", dto.Email);
             return Ok(userDto);
+        }
+
+        // GET : Admin/GetDemoDataStatus
+        [HttpGet]
+        public async Task<IActionResult> GetDemoDataStatus()
+        {
+            return Json(await _demoDataService.GetStatusAsync());
+        }
+
+        // POST : Admin/SeedDemoData
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SeedDemoData()
+        {
+            var (result, errors) = await _demoDataService.SeedAsync();
+
+            if (errors.Any())
+                return BadRequest(new { errors });
+
+            _logger.LogInformation("Admin seeded demo data: {Message}", result!.Message);
+            return Ok(result);
+        }
+
+        // DELETE : Admin/PurgeDemoData
+        [HttpDelete]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PurgeDemoData()
+        {
+            var result = await _demoDataService.PurgeAsync();
+
+            _logger.LogWarning("Admin purged demo data: {Message}", result.Message);
+            return Ok(result);
         }
     }
 }

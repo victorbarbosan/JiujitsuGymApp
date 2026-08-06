@@ -4,6 +4,9 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Lets the local bootstrap-admin password live outside the repo:
+         dotnet user-secrets set "SeedAdmin:Password" "<value>" -->
+    <UserSecretsId>jiujitsugymapp-3f1c8a52-0d47-4b9e-9a21-6c5d8e7b1f04</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
