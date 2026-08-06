@@ -7,6 +7,9 @@
     <li class="nav-item">
         <button class="nav-link" id="classes-tab" data-bs-toggle="tab" data-bs-target="#classes" type="button" role="tab">Classes</button>
     </li>
+    <li class="nav-item">
+        <button class="nav-link" id="utilities-tab" data-bs-toggle="tab" data-bs-target="#utilities" type="button" role="tab">Utilities</button>
+    </li>
 </ul>
 
 <div class="tab-content border border-top-0 p-3" id="adminTabsContent">
@@ -15,5 +18,8 @@
     </div>
     <div class="tab-pane fade" id="classes" role="tabpanel">
         @await Html.PartialAsync("_ClassesTab", ViewBag.InitialSchedules as List<JiujitsuGymApp.Dtos.ClassScheduleDto>)
+    </div>
+    <div class="tab-pane fade" id="utilities" role="tabpanel">
+        @await Html.PartialAsync("_UtilitiesTab", ViewBag.DemoDataStatus as JiujitsuGymApp.Dtos.DemoDataStatusDto)
     </div>
 </div>

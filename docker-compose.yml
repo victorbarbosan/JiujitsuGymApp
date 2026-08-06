@@ -26,6 +26,13 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=jiujitsugym;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres}"
+      # First administrator, created on startup when no account holds this
+      # address yet. Leaving these set across redeploys is safe: an existing
+      # account is never re-created and never re-passworded, so a password
+      # changed in the app is not reverted on the next restart. Leave the
+      # password empty and the bootstrap is skipped entirely.
+      SeedAdmin__Email: ${SEED_ADMIN_EMAIL:-admin@nexusbjj.local}
+      SeedAdmin__Password: ${SEED_ADMIN_PASSWORD:-}
     volumes:
       # Persist Data Protection keys so auth cookies and antiforgery tokens
       # survive a redeploy. Without this the container generates a new key

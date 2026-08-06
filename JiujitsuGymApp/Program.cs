@@ -53,6 +53,8 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AccountService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<IdentitySeedService>();
+builder.Services.AddScoped<DemoDataService>();
 
 // Configure application cookies
 builder.Services.ConfigureApplicationCookie(options =>
@@ -79,7 +81,7 @@ builder.Services.AddControllersWithViews(options =>
 
 var app = builder.Build();
 
-// Apply pending migrations, then seed roles
+// Apply pending migrations, then seed the roles and bootstrap administrator
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -87,22 +89,8 @@ using (var scope = app.Services.CreateScope())
     var db = services.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
 
-    async Task SeedRolesAsync()
-    {
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-        var roles = new[] { "Admin", "Member", "Teacher" };
-
-        foreach (var roleName in roles)
-        {
-            if (!await roleManager.RoleExistsAsync(roleName))
-            {
-                await roleManager.CreateAsync(new IdentityRole(roleName));
-            }
-        }
-    }
-
     // Run the async seeding synchronously at startup
-    SeedRolesAsync().GetAwaiter().GetResult();
+    services.GetRequiredService<IdentitySeedService>().SeedAsync().GetAwaiter().GetResult();
 }
 
 // Pipeline
