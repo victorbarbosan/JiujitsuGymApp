@@ -1,4 +1,5 @@
 ﻿@model JiujitsuGymApp.Models.HomeViewModel?
+@using System.Globalization
 
 @{
     ViewData["Title"] = "Home";
@@ -111,7 +112,14 @@ else if (Model is not null)
                         <div class="list-group list-group-flush">
                             @foreach (var c in Model.TodayClasses)
                             {
-                                var time = DateTime.Parse(c.DateTime).ToLocalTime().ToString("h:mm tt");
+                                @* A class stores its schedule's wall-clock time tagged as UTC, so
+                                   read it straight back rather than shifting it into a timezone.
+                                   RoundtripKind keeps the trailing Z from converting on parse -
+                                   without it the time moved by the server's UTC offset and this
+                                   list disagreed with the calendar on the very same class. *@
+                                var time = DateTime
+                                    .Parse(c.DateTime, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)
+                                    .ToString("h:mm tt", CultureInfo.InvariantCulture);
                                 <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
                                     <div>
                                         <span class="fw-semibold">@time</span>
