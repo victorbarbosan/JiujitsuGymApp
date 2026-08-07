@@ -10,9 +10,23 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// The connection string carries a password, so it is deliberately absent from
+// the committed appsettings.json. Locally it comes from user-secrets; deployed
+// it comes from ConnectionStrings__DefaultConnection. Fail here with something
+// actionable rather than letting Npgsql throw about a malformed empty string.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "No database connection string configured. For local development run:\r\n\r\n" +
+        "  dotnet user-secrets --project JiujitsuGymApp set \"ConnectionStrings:DefaultConnection\" " +
+        "\"Host=localhost;Port=5432;Database=jiujitsugym;Username=postgres;Password=postgres\"\r\n\r\n" +
+        "In Docker this is supplied as the ConnectionStrings__DefaultConnection environment variable.");
+}
+
 // Add DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // Add Identity
 builder.Services.AddIdentity<User, IdentityRole>(options =>
