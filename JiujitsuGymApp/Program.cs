@@ -67,6 +67,11 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AccountService>();
 
+// Sending happens on a background worker so the forgot-password request can
+// answer immediately instead of waiting on the relay handshake.
+builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
+builder.Services.AddHostedService<EmailBackgroundService>();
+
 // Without credentials SmtpEmailSender can only throw, which would leave the
 // password reset flow untestable for anyone who has not set up a Gmail app
 // password. Fall back to writing the mail to disk, but only in Development -
