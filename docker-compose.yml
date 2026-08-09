@@ -33,6 +33,12 @@ services:
       # password empty and the bootstrap is skipped entirely.
       SeedAdmin__Email: ${SEED_ADMIN_EMAIL:-admin@nexusbjj.local}
       SeedAdmin__Password: ${SEED_ADMIN_PASSWORD:-}
+      # Gmail relay for password-reset email. Username is the Gmail address;
+      # password is an app password (myaccount.google.com/apppasswords), not
+      # the account password. Leave empty and the app runs fine - only the
+      # forgot-password email fails (logged, never shown to the visitor).
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
     volumes:
       # Persist Data Protection keys so auth cookies and antiforgery tokens
       # survive a redeploy. Without this the container generates a new key

@@ -66,6 +66,21 @@ builder.Services.AddScoped<ClassService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AccountService>();
+
+// Without credentials SmtpEmailSender can only throw, which would leave the
+// password reset flow untestable for anyone who has not set up a Gmail app
+// password. Fall back to writing the mail to disk, but only in Development -
+// the Pi runs as Production, so a missing variable there stays a loud failure
+// rather than silently parking reset links in a folder.
+if (builder.Environment.IsDevelopment() &&
+    string.IsNullOrWhiteSpace(builder.Configuration["Smtp:Password"]))
+{
+    builder.Services.AddTransient<IEmailSender, DevFileEmailSender>();
+}
+else
+{
+    builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
+}
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<IdentitySeedService>();
 builder.Services.AddScoped<DemoDataService>();

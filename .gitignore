@@ -7,6 +7,9 @@
 [Ll]og/
 [Ll]ogs/
 
+# Mail written to disk by DevFileEmailSender - contains live reset links
+App_Data/
+
 # Ignore Vite build outputs
 jiujitsugymapp/wwwroot/js/app.js
 jiujitsugymapp/wwwroot/js/app.js.map
