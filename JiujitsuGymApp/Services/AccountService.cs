@@ -37,6 +37,35 @@ namespace JiujitsuGymApp.Services
 
         public Task LogoutAsync() => signInManager.SignOutAsync();
 
+        /// <summary>
+        /// Returns a password reset token for the account, or null when no
+        /// account holds this address. Callers must not surface which of the
+        /// two happened — that would let anyone probe for registered emails.
+        /// </summary>
+        public async Task<string?> GeneratePasswordResetTokenAsync(string email)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+            if (user is null) return null;
+
+            return await userManager.GeneratePasswordResetTokenAsync(user);
+        }
+
+        public async Task<IEnumerable<string>> ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+            if (user is null)
+                return ["This password reset link is invalid or has expired. Please request a new one."];
+
+            var result = await userManager.ResetPasswordAsync(user, token, newPassword);
+            if (result.Succeeded) return [];
+
+            // A bad or expired token needs friendlier wording than Identity's
+            // "Invalid token."; password-rule failures read fine as-is.
+            return result.Errors.Select(e => e.Code == "InvalidToken"
+                ? "This password reset link is invalid or has expired. Please request a new one."
+                : e.Description);
+        }
+
         private async Task RecordLoginAsync(User user)
         {
             user.LastLoginAt = DateTime.UtcNow;
