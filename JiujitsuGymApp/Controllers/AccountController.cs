@@ -1,13 +1,17 @@
-using JiujitsuGymApp.Dtos;
+﻿using JiujitsuGymApp.Dtos;
 using JiujitsuGymApp.Models;
 using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace JiujitsuGymApp.Controllers
 {
     public class AccountController : Controller
     {
+        /// <summary>Rate limit policy applied to the forgot-password form; configured in Program.cs.</summary>
+        public const string ForgotPasswordPolicy = "forgot-password";
+
         private readonly AccountService _accountService;
         private readonly IEmailQueue _emailQueue;
         private readonly ILogger<AccountController> _logger;
@@ -113,6 +117,7 @@ namespace JiujitsuGymApp.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting(ForgotPasswordPolicy)]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
