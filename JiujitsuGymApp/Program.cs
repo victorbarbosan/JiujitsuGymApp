@@ -1,3 +1,4 @@
+using JiujitsuGymApp.Controllers;
 using JiujitsuGymApp.Data;
 using JiujitsuGymApp.Helpers;
 using JiujitsuGymApp.Models;
@@ -6,7 +7,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +69,45 @@ builder.Services.AddScoped<ClassService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AccountService>();
+// Sending happens on a background worker so the forgot-password request can
+// answer immediately instead of waiting on the relay handshake.
+builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
+builder.Services.AddHostedService<EmailBackgroundService>();
+
+// Without credentials SmtpEmailSender can only throw, which would leave the
+// password reset flow untestable for anyone who has not set up a Gmail app
+// password. Fall back to writing the mail to disk, but only in Development -
+// the Pi runs as Production, so a missing variable there stays a loud failure
+// rather than silently parking reset links in a folder.
+if (builder.Environment.IsDevelopment() &&
+    string.IsNullOrWhiteSpace(builder.Configuration["Smtp:Password"]))
+{
+    builder.Services.AddTransient<IEmailSender, DevFileEmailSender>();
+}
+else
+{
+    builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
+}
+
+// Forgot-password is the only anonymous endpoint that sends mail, and the Gmail
+// relay behind it allows a few hundred messages a day. Cap it per client IP so
+// nobody can exhaust the day's quota or flood a member's inbox by resubmitting
+// the form. The limiter is in-memory, so it costs the Pi a dictionary entry per
+// caller rather than a process.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(AccountController.ForgotPasswordPolicy, context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            // UseForwardedHeaders runs first, so this is the real client IP
+            // rather than the reverse proxy's.
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(15)
+            }));
+});
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<IdentitySeedService>();
 builder.Services.AddScoped<DemoDataService>();
@@ -127,6 +169,9 @@ app.UseStatusCodePagesWithReExecute("/Home/StatusCodePage", "?code={0}");
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// After UseRouting so the endpoint's rate limit policy is known.
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

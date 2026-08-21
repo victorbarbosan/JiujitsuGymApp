@@ -1,22 +1,29 @@
-using JiujitsuGymApp.Dtos;
+﻿using JiujitsuGymApp.Dtos;
 using JiujitsuGymApp.Models;
 using JiujitsuGymApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace JiujitsuGymApp.Controllers
 {
     public class AccountController : Controller
     {
+        /// <summary>Rate limit policy applied to the forgot-password form; configured in Program.cs.</summary>
+        public const string ForgotPasswordPolicy = "forgot-password";
+
         private readonly AccountService _accountService;
+        private readonly IEmailQueue _emailQueue;
         private readonly ILogger<AccountController> _logger;
 
         public AccountController(
             AccountService accountService,
+            IEmailQueue emailQueue,
             ILogger<AccountController> logger
             )
         {
             _accountService = accountService;
+            _emailQueue = emailQueue;
             _logger = logger;
         }
 
@@ -96,6 +103,95 @@ namespace JiujitsuGymApp.Controllers
                 }
             }
             return View(model);
+        }
+
+        // GET : /Account/ForgotPassword
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        // POST : /Account/ForgotPassword
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        [EnableRateLimiting(ForgotPasswordPolicy)]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var token = await _accountService.GeneratePasswordResetTokenAsync(model.Email);
+            if (token is not null)
+            {
+                // Url.Action percent-encodes the token so it survives the query
+                // string; PasswordResetEmail HTML encodes it for the href.
+                var link = Url.Action(nameof(ResetPassword), "Account",
+                    new { email = model.Email, token }, protocol: Request.Scheme)!;
+
+                // Queued rather than sent inline. The relay handshake costs a
+                // second or two, and doing it here also leaked whether the
+                // address was registered: a hit waited for Gmail, a miss
+                // returned instantly. Queuing makes both responses equally fast.
+                _emailQueue.Enqueue(PasswordResetEmail.Create(model.Email, link));
+
+                _logger.LogInformation("Password reset link generated and queued for {Email}", model.Email);
+            }
+
+            // Same page either way - never reveal whether the address is registered
+            return RedirectToAction(nameof(ForgotPasswordConfirmation));
+        }
+
+        // GET : /Account/ForgotPasswordConfirmation
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPasswordConfirmation()
+        {
+            return View();
+        }
+
+        // GET : /Account/ResetPassword (link target from the email)
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPassword(string? email = null, string? token = null)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+                return RedirectToAction(nameof(ForgotPassword));
+
+            var model = new ResetPasswordViewModel { Email = email, Token = token };
+            return View(model);
+        }
+
+        // POST : /Account/ResetPassword
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var errors = await _accountService.ResetPasswordAsync(model.Email, model.Token, model.NewPassword);
+
+            if (!errors.Any())
+            {
+                _logger.LogInformation("Password reset completed for {Email}", model.Email);
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+
+            foreach (var error in errors)
+            {
+                ModelState.AddModelError(string.Empty, error);
+            }
+            return View(model);
+        }
+
+        // GET : /Account/ResetPasswordConfirmation
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPasswordConfirmation()
+        {
+            return View();
         }
 
         // POST : Logout
