@@ -51,6 +51,21 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// Google external login. Credentials come from user-secrets/environment,
+// same pattern as Smtp:Password - never committed to appsettings.json.
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+{
+    builder.Services.AddAuthentication()
+        .AddGoogle(options =>
+        {
+            options.ClientId = googleClientId;
+            options.ClientSecret = googleClientSecret;
+            // Default callback path is /signin-google.
+        });
+}
+
 // Behind Cloudflare -> nginx, both of which terminate/forward over the local
 // network, so honour X-Forwarded-Proto/-For to recover the original https
 // scheme and client IP. Only the local reverse proxy can reach the app, so
