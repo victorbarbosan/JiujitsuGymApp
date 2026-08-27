@@ -105,6 +105,63 @@ namespace JiujitsuGymApp.Controllers
             return View(model);
         }
 
+        // POST : /Account/ExternalLogin
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+        {
+            var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+            var properties = _accountService.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
+        }
+
+        // GET : /Account/ExternalLoginCallback
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+        {
+            if (remoteError is not null)
+            {
+                ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
+                return View(nameof(Login));
+            }
+
+            var info = await _accountService.GetExternalLoginInfoAsync();
+            if (info is null)
+            {
+                ModelState.AddModelError(string.Empty, "Error loading external login information.");
+                return View(nameof(Login));
+            }
+
+            var signInResult = await _accountService.ExternalLoginSignInAsync(info);
+            if (signInResult.Succeeded)
+            {
+                _logger.LogInformation("User logged in with {LoginProvider} provider.", info.LoginProvider);
+                return RedirectToLocal(returnUrl);
+            }
+
+            if (signInResult.IsLockedOut)
+            {
+                ModelState.AddModelError(string.Empty, "This account is locked out.");
+                return View(nameof(Login));
+            }
+
+            // No local account linked yet - provision one from the claims Google supplied.
+            var errors = await _accountService.ProvisionExternalUserAsync(info);
+            if (!errors.Any())
+            {
+                _logger.LogInformation("User created a new account via {LoginProvider} provider.", info.LoginProvider);
+                return RedirectToLocal(returnUrl);
+            }
+
+            foreach (var error in errors)
+            {
+                ModelState.AddModelError(string.Empty, error);
+            }
+            return View(nameof(Login));
+        }
+
         // GET : /Account/ForgotPassword
         [HttpGet]
         [AllowAnonymous]
