@@ -39,6 +39,10 @@ services:
       # forgot-password email fails (logged, never shown to the visitor).
       Smtp__Username: ${SMTP_USERNAME:-}
       Smtp__Password: ${SMTP_PASSWORD:-}
+      # Google external login. Leave empty and the app runs fine - the
+      # provider is simply not registered and the Google button is unusable.
+      Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:-}
+      Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:-}
     volumes:
       # Persist Data Protection keys so auth cookies and antiforgery tokens
       # survive a redeploy. Without this the container generates a new key
