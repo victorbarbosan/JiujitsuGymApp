@@ -154,6 +154,16 @@ else if (Model is not null)
 
     </div>
 
+    <!-- Announcements -->
+    <div class="row g-3 mt-1">
+        <div class="col-12">
+            @{
+                ViewBag.CanCreateAnnouncement = Model.CanCreateAnnouncement;
+            }
+            <partial name="_AnnouncementsWidget" model="Model.Announcements" />
+        </div>
+    </div>
+
     <!-- Quick actions -->
     <div class="row g-3 mt-2">
         <div class="col-6 col-md-3">

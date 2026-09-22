@@ -1,0 +1,81 @@
+@model List<JiujitsuGymApp.Dtos.AnnouncementDto>
+@{
+	var canCreate = ViewBag.CanCreateAnnouncement as bool? ?? false;
+}
+
+<!-- Announcements widget: server-rendered for now (full postback via forms).
+	 A JS-enhanced fetch version can replace this later without changing the
+	 controller/service contract. -->
+<div class="card border-0 shadow-sm h-100">
+	<div class="card-body">
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<h6 class="fw-bold text-uppercase text-muted small mb-0">
+				<i class="fas fa-bullhorn me-1"></i>Announcements
+			</h6>
+		</div>
+
+		@if (canCreate)
+		{
+			<form asp-controller="Announcements" asp-action="CreatePost" method="post" class="mb-3">
+				@Html.AntiForgeryToken()
+				<div class="input-group">
+					<input type="text" name="Content" class="form-control" placeholder="Post a new announcement..." maxlength="2000" required />
+					<button type="submit" class="btn btn-primary btn-sm">Post</button>
+				</div>
+			</form>
+		}
+
+		@if (Model is null || !Model.Any())
+		{
+			<p class="text-muted mb-0">No announcements yet.</p>
+		}
+		else
+		{
+			@foreach (var announcement in Model)
+			{
+				<div class="border rounded p-3 mb-3">
+					<div class="d-flex justify-content-between">
+						<span class="fw-semibold">@announcement.AuthorName</span>
+						<span class="small text-muted">@announcement.CreatedAt.ToString("g")</span>
+					</div>
+					<p class="mb-2">@announcement.Content</p>
+
+					@if (announcement.Replies.Any())
+					{
+						<div class="ms-3 border-start ps-3">
+							@foreach (var reply in announcement.Replies)
+							{
+								<div class="d-flex justify-content-between align-items-start mb-1">
+									<div>
+										<span class="fw-semibold small">@reply.AuthorName</span>
+										<span class="small text-muted ms-2">@reply.CreatedAt.ToString("g")</span>
+										<p class="mb-1 small">@reply.Content</p>
+									</div>
+									@if (reply.CanDelete)
+									{
+										<form asp-controller="Announcements" asp-action="DeleteReplyPost" method="post">
+											@Html.AntiForgeryToken()
+											<input type="hidden" name="id" value="@reply.Id" />
+											<button type="submit" class="btn btn-sm btn-link text-danger p-0">
+												<i class="fas fa-trash"></i>
+											</button>
+										</form>
+									}
+								</div>
+							}
+						</div>
+					}
+
+					<form asp-controller="Announcements" asp-action="ReplyPost" method="post" class="mt-2">
+						@Html.AntiForgeryToken()
+						<input type="hidden" name="id" value="@announcement.Id" />
+						<div class="input-group input-group-sm">
+							<input type="text" name="Content" class="form-control" placeholder="Reply..." maxlength="2000" required />
+							<button type="submit" class="btn btn-outline-primary btn-sm">Reply</button>
+						</div>
+					</form>
+				</div>
+			}
+		}
+	</div>
+</div>
