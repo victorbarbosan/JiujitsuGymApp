@@ -20,6 +20,13 @@ namespace JiujitsuGymApp.Services
         Forbidden
     }
 
+    public enum DeleteAnnouncementResult
+    {
+        Success,
+        NotFound,
+        Forbidden
+    }
+
     /// <summary>
     /// Encapsulates the Announcements business rules: creating root announcements is
     /// restricted to Admin/Teacher at the controller (via [Authorize(Roles=...)]), while
@@ -47,6 +54,7 @@ namespace JiujitsuGymApp.Services
                 AuthorName = a.Author.Name,
                 Content = a.Content,
                 CreatedAt = a.CreatedAt,
+                CanDelete = isAdmin || (currentUserId != null && currentUserId == a.AuthorId),
                 Replies = a.Replies
                     .OrderBy(r => r.CreatedAt)
                     .Select(r => new AnnouncementReplyDto
@@ -55,7 +63,7 @@ namespace JiujitsuGymApp.Services
                         AuthorName = r.Author.Name,
                         Content = r.Content,
                         CreatedAt = r.CreatedAt,
-                        CanDelete = isAdmin || (currentUserId != null && currentUserId == a.AuthorId)
+                        CanDelete = isAdmin || (currentUserId != null && currentUserId == a.AuthorId)       
                     })
                     .ToList()
             }).ToList();
@@ -73,6 +81,28 @@ namespace JiujitsuGymApp.Services
             db.Announcements.Add(announcement);
             await db.SaveChangesAsync();
             return announcement.Id;
+        }
+
+        /// <summary>Admin can delete any announcement; a Teacher can delete announcements they authored.</summary>
+        public async Task<DeleteAnnouncementResult> DeleteAnnouncementAsync(int announcementId, string currentUserId)
+        {
+            var announcement = await db.Announcements
+                .Include(a => a.Replies.Where(r => r.DeletedAt == null))
+                .FirstOrDefaultAsync(a => a.Id == announcementId && a.DeletedAt == null && a.ParentId == null);
+            if (announcement is null) return DeleteAnnouncementResult.NotFound;
+            var isAdmin = await IsInRoleAsync(currentUserId, "Admin");
+            var isOwningTeacher = announcement.AuthorId == currentUserId;
+            if (!isAdmin && !isOwningTeacher) return DeleteAnnouncementResult.Forbidden;
+
+            var deletedAt = DateTime.UtcNow;
+            announcement.DeletedAt = deletedAt;
+            foreach (var reply in announcement.Replies)
+            {
+                reply.DeletedAt = deletedAt;
+            }
+
+            await db.SaveChangesAsync();
+            return DeleteAnnouncementResult.Success;
         }
 
         /// <summary>Any authenticated user can reply, but only to a root announcement (no nested replies).</summary>

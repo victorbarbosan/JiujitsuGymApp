@@ -42,6 +42,25 @@ namespace JiujitsuGymApp.Controllers
             return Ok(new { id });
         }
 
+        /// DELETE: Announcements/Delete/5
+        /// Only Admin/Teacher can delete an announcement thread. Deleting a thread also deletes all its replies.
+        [HttpDelete]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userId = await _currentUserService.GetUserIdAsync();
+            if (userId is null) return Unauthorized();
+
+            var result = await _announcementService.DeleteAnnouncementAsync(id, userId);
+
+            return result switch
+            {
+                DeleteAnnouncementResult.NotFound => NotFound(),
+                DeleteAnnouncementResult.Forbidden => Forbid(),
+                _ => Ok()
+            };
+        }
+
         // POST: Announcements/Reply/5
         // Any authenticated user (including students/Members) can reply.
         [HttpPost]
@@ -124,6 +143,19 @@ namespace JiujitsuGymApp.Controllers
             if (userId is null) return Unauthorized();
 
             await _announcementService.DeleteReplyAsync(id, userId);
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        // POST: Announcements/DeletePost
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeletePost(int id)
+        {
+            var userId = await _currentUserService.GetUserIdAsync();
+            if (userId is null) return Unauthorized();
+
+            await _announcementService.DeleteAnnouncementAsync(id, userId);
 
             return RedirectToAction("Index", "Home");
         }

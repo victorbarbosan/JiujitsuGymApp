@@ -15,6 +15,7 @@ namespace JiujitsuGymApp.Dtos
         public string AuthorName { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public bool CanDelete { get; set; }
         public List<AnnouncementReplyDto> Replies { get; set; } = [];
     }
 }
