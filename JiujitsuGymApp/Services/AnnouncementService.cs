@@ -63,7 +63,7 @@ namespace JiujitsuGymApp.Services
                         AuthorName = r.Author.Name,
                         Content = r.Content,
                         CreatedAt = r.CreatedAt,
-                        CanDelete = isAdmin || (currentUserId != null && currentUserId == a.AuthorId)       
+                        CanDelete = isAdmin || (currentUserId != null && (currentUserId == a.AuthorId || currentUserId == r.AuthorId))
                     })
                     .ToList()
             }).ToList();
@@ -125,7 +125,7 @@ namespace JiujitsuGymApp.Services
             return ReplyResult.Success;
         }
 
-        /// <summary>Admin can delete any reply; a Teacher can delete replies on announcements they authored.</summary>
+        /// <summary>Admin can delete any reply; a Teacher can delete replies on announcements they authored; any user can delete their own reply.</summary>
         public async Task<DeleteReplyResult> DeleteReplyAsync(int replyId, string currentUserId)
         {
             var reply = await db.Announcements
@@ -136,8 +136,9 @@ namespace JiujitsuGymApp.Services
 
             var isAdmin = await IsInRoleAsync(currentUserId, "Admin");
             var isOwningTeacher = reply.Parent!.AuthorId == currentUserId;
+            var isOwnReply = reply.AuthorId == currentUserId;
 
-            if (!isAdmin && !isOwningTeacher) return DeleteReplyResult.Forbidden;
+            if (!isAdmin && !isOwningTeacher && !isOwnReply) return DeleteReplyResult.Forbidden;
 
             reply.DeletedAt = DateTime.UtcNow;
             await db.SaveChangesAsync();
