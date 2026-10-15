@@ -15,6 +15,7 @@ namespace JiujitsuGymApp.Data
         public DbSet<Class> Classes { get; set; }
         public DbSet<ClassSchedule> ClassSchedules { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
+        public DbSet<Announcement> Announcements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,6 +44,18 @@ namespace JiujitsuGymApp.Data
             modelBuilder.Entity<Attendance>()
                 .HasIndex(a => new { a.ClassId, a.UserId })
                 .IsUnique();
+
+            modelBuilder.Entity<Announcement>()
+                .HasOne(a => a.Author)
+                .WithMany()
+                .HasForeignKey(a => a.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Announcement>()
+                .HasOne(a => a.Parent)
+                .WithMany(a => a.Replies)
+                .HasForeignKey(a => a.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

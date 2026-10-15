@@ -8,5 +8,7 @@ namespace JiujitsuGymApp.Models
         public string Belt { get; set; } = "White";
         public int TotalClassesAttended { get; set; }
         public List<ClassEventDto> TodayClasses { get; set; } = [];
+        public List<AnnouncementDto> Announcements { get; set; } = [];
+        public bool CanCreateAnnouncement { get; set; }
     }
 }

@@ -22,6 +22,42 @@ namespace JiujitsuGymApp.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("JiujitsuGymApp.Models.Announcement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Announcements");
+                });
+
             modelBuilder.Entity("JiujitsuGymApp.Models.Attendance", b =>
                 {
                     b.Property<int>("Id")
@@ -387,6 +423,24 @@ namespace JiujitsuGymApp.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("JiujitsuGymApp.Models.Announcement", b =>
+                {
+                    b.HasOne("JiujitsuGymApp.Models.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("JiujitsuGymApp.Models.Announcement", "Parent")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Parent");
+                });
+
             modelBuilder.Entity("JiujitsuGymApp.Models.Attendance", b =>
                 {
                     b.HasOne("JiujitsuGymApp.Models.Class", "Class")
@@ -483,6 +537,11 @@ namespace JiujitsuGymApp.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("JiujitsuGymApp.Models.Announcement", b =>
+                {
+                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("JiujitsuGymApp.Models.Class", b =>

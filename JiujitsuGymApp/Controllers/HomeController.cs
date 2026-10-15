@@ -12,15 +12,18 @@ namespace JiujitsuGymApp.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<User> _userManager;
         private readonly ClassService _classService;
+        private readonly AnnouncementService _announcementService;
 
         public HomeController(
             ILogger<HomeController> logger,
             UserManager<User> userManager,
-            ClassService classService)
+            ClassService classService,
+            AnnouncementService announcementService)
         {
             _logger = logger;
             _userManager = userManager;
             _classService = classService;
+            _announcementService = announcementService;
         }
 
         // The landing page is the one signed-out entry point besides login and
@@ -41,6 +44,8 @@ namespace JiujitsuGymApp.Controllers
 
             var todayClasses = await _classService.GetClassEventsAsync(todayUtc, tomorrowUtc, user.Id);
             var totalAttended = await _classService.GetTotalAttendedAsync(user.Id);
+            var announcements = await _announcementService.GetAnnouncementsAsync(user.Id);
+            var canCreateAnnouncement = await _userManager.IsInRoleAsync(user, "Admin") || await _userManager.IsInRoleAsync(user, "Teacher");
 
             var model = new HomeViewModel
             {
@@ -48,6 +53,8 @@ namespace JiujitsuGymApp.Controllers
                 Belt = user.Belt?.ToString() ?? "White",
                 TotalClassesAttended = totalAttended,
                 TodayClasses = todayClasses,
+                Announcements = announcements,
+                CanCreateAnnouncement = canCreateAnnouncement,
             };
 
             return View(model);

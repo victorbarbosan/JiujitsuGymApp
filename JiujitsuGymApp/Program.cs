@@ -83,6 +83,7 @@ builder.Services.AddScoped<ScheduleService>();
 builder.Services.AddScoped<ClassService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AnnouncementService>();
 builder.Services.AddScoped<AccountService>();
 // Sending happens on a background worker so the forgot-password request can
 // answer immediately instead of waiting on the relay handshake.
