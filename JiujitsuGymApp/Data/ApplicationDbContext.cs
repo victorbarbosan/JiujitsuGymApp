@@ -16,6 +16,8 @@ namespace JiujitsuGymApp.Data
         public DbSet<ClassSchedule> ClassSchedules { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
+        public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
+        public DbSet<Subscription> Subscriptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -56,6 +58,31 @@ namespace JiujitsuGymApp.Data
                 .WithMany(a => a.Replies)
                 .HasForeignKey(a => a.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Subscription>(entity =>
+            {
+                entity.Property(s => s.Status)
+                    .HasConversion<string>();
+
+                entity.HasOne(s => s.User)
+                    .WithMany()
+                    .HasForeignKey(s => s.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(s => s.SubscriptionPlan)
+                    .WithMany(p => p.Subscriptions)
+                    .HasForeignKey(s => s.SubscriptionPlanId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(s => s.StripeSubscriptionId)
+                    .IsUnique();
+            });
+
+            modelBuilder.Entity<SubscriptionPlan>(entity =>
+            {
+                entity.Property(p => p.Interval)
+                    .HasConversion<string>();
+            });
         }
     }
 }
