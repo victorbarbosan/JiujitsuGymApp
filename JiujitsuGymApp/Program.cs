@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
+using StripeClient = Stripe.StripeClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -127,6 +128,21 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<IdentitySeedService>();
 builder.Services.AddScoped<DemoDataService>();
+
+// Stripe credentials follow the same pattern as Smtp:Password - empty
+// placeholders in appsettings.json, real values from user-secrets locally
+// or environment variables (Stripe__SecretKey, etc.) in production.
+builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection(StripeOptions.SectionName));
+var stripeSecretKey = builder.Configuration[$"{StripeOptions.SectionName}:SecretKey"];
+if (string.IsNullOrWhiteSpace(stripeSecretKey) && !builder.Environment.IsDevelopment())
+{
+    throw new InvalidOperationException(
+        "No Stripe secret key configured. Set Stripe:SecretKey via user-secrets locally " +
+        "or the Stripe__SecretKey environment variable in production.");
+}
+// StripeClient is safe as a singleton: it is a thin HTTP wrapper around the
+// configured secret key, not a per-request/per-user object.
+builder.Services.AddSingleton(new StripeClient(stripeSecretKey ?? string.Empty));
 
 // Configure application cookies
 builder.Services.ConfigureApplicationCookie(options =>
