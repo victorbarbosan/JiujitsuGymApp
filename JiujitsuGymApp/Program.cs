@@ -128,6 +128,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<IdentitySeedService>();
 builder.Services.AddScoped<DemoDataService>();
+builder.Services.AddScoped<SubscriptionService>();
 
 // Stripe credentials follow the same pattern as Smtp:Password - empty
 // placeholders in appsettings.json, real values from user-secrets locally

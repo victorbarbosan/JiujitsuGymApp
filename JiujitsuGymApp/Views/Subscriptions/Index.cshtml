@@ -1,0 +1,38 @@
+@model List<JiujitsuGymApp.Dtos.SubscriptionPlanDto>
+@{
+	ViewData["Title"] = "Membership Plans";
+	var status = ViewBag.Status as JiujitsuGymApp.Dtos.SubscriptionStatusDto;
+}
+
+<h1>Membership Plans</h1>
+
+@if (status is { HasSubscription: true })
+{
+	<div class="alert alert-info">
+		Current plan: <strong>@status.PlanName</strong> &mdash; status: <strong>@status.Status</strong>
+		@if (status.CurrentPeriodEnd is not null)
+		{
+			<span> (renews @status.CurrentPeriodEnd.Value.ToString("d"))</span>
+		}
+	</div>
+}
+
+<div class="row">
+	@foreach (var plan in Model)
+	{
+		<div class="col-md-4 mb-3">
+			<div class="card h-100">
+				<div class="card-body">
+					<h5 class="card-title">@plan.Name</h5>
+					<p class="card-text">@plan.Description</p>
+					<p class="card-text">
+						<strong>@plan.Price.ToString("C")</strong> / @plan.Interval.ToLower()
+					</p>
+					<form asp-action="Checkout" asp-route-id="@plan.Id" method="post">
+						<button type="submit" class="btn btn-primary">Subscribe</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	}
+</div>
