@@ -39,6 +39,11 @@
                            aria-current="@(section == "Products" ? "page" : null)"
                            asp-area="" asp-controller="Products" asp-action="Index">Products</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(section == "Subscriptions" ? "active" : null)"
+                           aria-current="@(section == "Subscriptions" ? "page" : null)"
+                           asp-area="" asp-controller="Subscriptions" asp-action="Index">Membership</a>
+                    </li>
 
                     @* Admin link *@
                     @if (User.IsInRole("Admin"))

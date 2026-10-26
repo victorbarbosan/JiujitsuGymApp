@@ -129,6 +129,7 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<IdentitySeedService>();
 builder.Services.AddScoped<DemoDataService>();
 builder.Services.AddScoped<SubscriptionService>();
+builder.Services.AddScoped<SubscriptionPlanSeedService>();
 
 // Stripe credentials follow the same pattern as Smtp:Password - empty
 // placeholders in appsettings.json, real values from user-secrets locally
@@ -180,11 +181,12 @@ using (var scope = app.Services.CreateScope())
 
     // Run the async seeding synchronously at startup
     services.GetRequiredService<IdentitySeedService>().SeedAsync().GetAwaiter().GetResult();
+    services.GetRequiredService<SubscriptionPlanSeedService>().SeedAsync().GetAwaiter().GetResult();
 }
 
 // Pipeline
 // Must run before anything that inspects the scheme or client IP so the
-// rest of the pipeline sees the original https request from behind the proxy.
+// rest of the pipeline sees the original https request from behind the proxy.  
 app.UseForwardedHeaders();
 
 if (!app.Environment.IsDevelopment())
