@@ -29,34 +29,47 @@ namespace JiujitsuGymApp.Controllers
             return View(plans);
         }
 
-        // POST: Subscriptions/Checkout/5
+        // POST: Subscriptions/Checkout
+        // Returns JSON ({ clientSecret }) rather than redirecting - the
+        // client-side script uses this to mount Stripe's embedded Checkout
+        // iframe in place, instead of navigating away to a hosted page.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Checkout(int id)
+        public async Task<IActionResult> Checkout([FromBody] CheckoutRequest request)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user is null) return Challenge();
 
-            var successUrl = Url.Action(nameof(Success), "Subscriptions", null, Request.Scheme)!;
-            var cancelUrl = Url.Action(nameof(Index), "Subscriptions", null, Request.Scheme)!;
+            // Stripe appends {CHECKOUT_SESSION_ID} itself; ReturnUrl must contain
+            // that exact placeholder for Stripe to substitute the real session id.
+            var returnUrl = Url.Action(nameof(Return), "Subscriptions", null, Request.Scheme)
+                + "?session_id={CHECKOUT_SESSION_ID}";
 
-            var checkoutUrl = await _subscriptionService.CreateCheckoutSessionAsync(
+            var clientSecret = await _subscriptionService.CreateEmbeddedCheckoutSessionAsync(
                 user.Id,
                 user.Email!,
-                id,
-                successUrl,
-                cancelUrl);
+                request.Id,
+                returnUrl);
 
-            return Redirect(checkoutUrl);
+            return Json(new { clientSecret });
         }
 
-        // GET: Subscriptions/Success
-        public IActionResult Success()
+        // GET: Subscriptions/Return
+        // Stripe redirects the top-level window here after the embedded
+        // Checkout form is done (success or cancellation). This page reads
+        // the session back from Stripe only to show immediate feedback - the
+        // webhook (not this request) is what actually confirms the payment
+        // and updates our local Subscription row.
+        public async Task<IActionResult> Return(string session_id)
         {
-            // The real confirmation of payment comes from the Stripe webhook,
-            // not from this redirect - this page is just a friendly landing
-            // spot while the webhook (processed asynchronously) catches up.
+            var status = await _subscriptionService.GetCheckoutSessionStatusAsync(session_id);
+            ViewBag.SessionStatus = status;
             return View();
+        }
+
+        public class CheckoutRequest
+        {
+            public int Id { get; set; }
         }
     }
 }

@@ -1,0 +1,22 @@
+@{
+	ViewData["Title"] = "Subscription";
+	var status = ViewBag.SessionStatus as string;
+}
+
+<h1>Subscription</h1>
+
+@if (status == "complete")
+{
+	<div class="alert alert-success">
+		Thanks! Your subscription is being processed. It can take a few seconds for the
+		payment confirmation to finish updating your account.
+	</div>
+}
+else
+{
+	<div class="alert alert-warning">
+		Checkout was not completed (status: @status).
+	</div>
+}
+
+<a class="btn btn-secondary" asp-action="Index">Back to Membership Plans</a>

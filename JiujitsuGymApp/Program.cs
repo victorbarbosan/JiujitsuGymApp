@@ -131,6 +131,14 @@ builder.Services.AddScoped<DemoDataService>();
 builder.Services.AddScoped<SubscriptionService>();
 builder.Services.AddScoped<SubscriptionPlanSeedService>();
 
+// The embedded Checkout fetch() call sends the antiforgery token as a header
+// (JSON body, no form fields) rather than a form field, so a header name must
+// be configured for ValidateAntiForgeryToken to find it.
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
+
 // Stripe credentials follow the same pattern as Smtp:Password - empty
 // placeholders in appsettings.json, real values from user-secrets locally
 // or environment variables (Stripe__SecretKey, etc.) in production.

@@ -1,10 +1,14 @@
 @model List<JiujitsuGymApp.Dtos.SubscriptionPlanDto>
+@inject IConfiguration Configuration
 @{
 	ViewData["Title"] = "Membership Plans";
 	var status = ViewBag.Status as JiujitsuGymApp.Dtos.SubscriptionStatusDto;
+	var stripePublishableKey = Configuration["Stripe:PublishableKey"];
 }
 
 <h1>Membership Plans</h1>
+
+@Html.AntiForgeryToken()
 
 @if (status is { HasSubscription: true })
 {
@@ -17,7 +21,7 @@
 	</div>
 }
 
-<div class="row">
+<div class="row" id="plans-row">
 	@foreach (var plan in Model)
 	{
 		<div class="col-md-4 mb-3">
@@ -28,11 +32,66 @@
 					<p class="card-text">
 						<strong>@plan.Price.ToString("C")</strong> / @plan.Interval.ToLower()
 					</p>
-					<form asp-action="Checkout" asp-route-id="@plan.Id" method="post">
-						<button type="submit" class="btn btn-primary">Subscribe</button>
-					</form>
+					<button type="button" class="btn btn-primary subscribe-btn" data-plan-id="@plan.Id">Subscribe</button>
 				</div>
 			</div>
 		</div>
 	}
 </div>
+
+@* Stripe's embedded Checkout renders inside this container once a plan is
+   selected. Hidden until then so the plan cards stay the focus initially. *@
+<div id="checkout-container" class="mt-4 d-none">
+	<div id="checkout"></div>
+</div>
+
+@section Scripts {
+	@* Stripe.js must be loaded directly from Stripe's CDN, never bundled or
+	   self-hosted - this is a PCI compliance requirement, not a style choice. *@
+	<script src="https://js.stripe.com/v3/"></script>
+	<script>
+		(function () {
+			const stripe = Stripe('@stripePublishableKey');
+			const plansRow = document.getElementById('plans-row');
+			const checkoutContainer = document.getElementById('checkout-container');
+			let checkout = null;
+
+			plansRow.addEventListener('click', async function (event) {
+				const button = event.target.closest('.subscribe-btn');
+				if (!button) return;
+
+				const planId = button.getAttribute('data-plan-id');
+				button.disabled = true;
+
+				try {
+					const response = await fetch('@Url.Action("Checkout", "Subscriptions")', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+						},
+						body: JSON.stringify({ id: planId })
+					});
+
+					if (!response.ok) {
+						throw new Error('Failed to start checkout session.');
+					}
+
+					const { clientSecret } = await response.json();
+
+					plansRow.classList.add('d-none');
+					checkoutContainer.classList.remove('d-none');
+
+					if (checkout) {
+						checkout.destroy();
+					}
+					checkout = await stripe.initEmbeddedCheckout({ clientSecret });
+					checkout.mount('#checkout');
+				} catch (err) {
+					console.error(err);
+					button.disabled = false;
+				}
+			});
+		})();
+	</script>
+}
