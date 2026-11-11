@@ -198,5 +198,101 @@ namespace JiujitsuGymApp.Services
             var session = await sessionService.GetAsync(sessionId);
             return session.Status;
         }
+
+        /// <summary>
+        /// Handles checkout.session.completed: the student just finished
+        /// paying in the embedded form. Looks up the local Subscription row
+        /// via the session's ClientReferenceId (set when we created the
+        /// session) and fills in the real Stripe identifiers + status pulled
+        /// from the Subscription object Checkout created behind the scenes.
+        /// Safe to run more than once - Stripe retries webhook delivery, so
+        /// every handler here is an idempotent upsert, not a one-shot action.
+        /// </summary>
+        public async Task HandleCheckoutSessionCompletedAsync(Session session)
+        {
+            if (!int.TryParse(session.ClientReferenceId, out var subscriptionId))
+            {
+                return; // Not a session we created - nothing to correlate against.
+            }
+
+            var subscription = await db.Subscriptions.FirstOrDefaultAsync(s => s.Id == subscriptionId);
+            if (subscription is null)
+            {
+                return;
+            }
+
+            subscription.StripeCustomerId = session.CustomerId;
+            subscription.StripeSubscriptionId = session.SubscriptionId;
+
+            if (!string.IsNullOrWhiteSpace(session.SubscriptionId))
+            {
+                var stripeSubscriptionService = new Stripe.SubscriptionService(stripeClient);
+                var stripeSubscription = await stripeSubscriptionService.GetAsync(session.SubscriptionId);
+                ApplyStripeSubscriptionState(subscription, stripeSubscription);
+            }
+
+            await db.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Handles customer.subscription.updated: fires for every change to
+        /// an existing Stripe subscription (renewal, status change, plan
+        /// swap, ...). Looked up by StripeSubscriptionId since this event is
+        /// not tied to a Checkout Session.
+        /// </summary>
+        public async Task HandleSubscriptionUpdatedAsync(Stripe.Subscription stripeSubscription)
+        {
+            var subscription = await db.Subscriptions
+                .FirstOrDefaultAsync(s => s.StripeSubscriptionId == stripeSubscription.Id);
+            if (subscription is null)
+            {
+                return;
+            }
+
+            ApplyStripeSubscriptionState(subscription, stripeSubscription);
+            await db.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Handles customer.subscription.deleted: the subscription is fully
+        /// canceled (self-service cancellation, API cancellation, or Stripe
+        /// giving up after repeated payment failures).
+        /// </summary>
+        public async Task HandleSubscriptionDeletedAsync(Stripe.Subscription stripeSubscription)
+        {
+            var subscription = await db.Subscriptions
+                .FirstOrDefaultAsync(s => s.StripeSubscriptionId == stripeSubscription.Id);
+            if (subscription is null)
+            {
+                return;
+            }
+
+            subscription.Status = SubscriptionStatus.Canceled;
+            subscription.CanceledAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+        }
+
+        private static void ApplyStripeSubscriptionState(Subscription local, Stripe.Subscription stripeSubscription)
+        {
+            local.Status = Enum.TryParse<SubscriptionStatus>(stripeSubscription.Status, ignoreCase: true, out var status)
+                ? status
+                : local.Status;
+
+            // Stripe.net 53.x exposes the period end per subscription item
+            // rather than on the Subscription itself.
+            var currentPeriodEnd = stripeSubscription.Items?.Data?
+                .Select(item => item.CurrentPeriodEnd)
+                .DefaultIfEmpty()
+                .Max();
+            if (currentPeriodEnd is { } periodEnd && periodEnd != default)
+            {
+                local.CurrentPeriodEnd = periodEnd;
+            }
+
+            if (stripeSubscription.CanceledAt is not null)
+            {
+                local.CanceledAt = stripeSubscription.CanceledAt;
+            }
+        }
     }
 }
