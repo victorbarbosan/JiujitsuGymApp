@@ -36,11 +36,22 @@ namespace JiujitsuGymApp.Services
 
         public async Task<SubscriptionStatusDto> GetStatusAsync(string userId)
         {
+            // A student can have multiple rows (e.g. an abandoned Incomplete
+            // attempt on one plan alongside a paid-up Active one on another),
+            // so picking "most recently created" alone can surface a stale
+            // pending attempt over the subscription that actually matters.
+            // Prefer any live (non-Incomplete/Expired/Canceled) subscription
+            // first, and only fall back to the latest attempt if the student
+            // has no live subscription at all.
             var subscription = await db.Subscriptions
                 .AsNoTracking()
                 .Include(s => s.SubscriptionPlan)
                 .Where(s => s.UserId == userId)
-                .OrderByDescending(s => s.CreatedAt)
+                .OrderByDescending(s =>
+                    s.Status != SubscriptionStatus.Incomplete &&
+                    s.Status != SubscriptionStatus.IncompleteExpired &&
+                    s.Status != SubscriptionStatus.Canceled)
+                .ThenByDescending(s => s.CreatedAt)
                 .FirstOrDefaultAsync();
 
             if (subscription is null)
